@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<queryservice xmlns="http://www.anyframejava.org/schema/query/mapping"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.anyframejava.org/schema/query/mapping http://www.anyframejava.org/schema/query/mapping/anyframe-query-mapping-1.0.xsd ">
+	<queries>
+		<query id="LinkViewService.setAccessKey">
+			<statement>
+				<![CDATA[
+					MERGE QICS_OTP AS target
+				    USING (SELECT :OTP) AS source ( OTP )
+				    ON (target.OTP=source.OTP)
+				    WHEN MATCHED THEN 
+				        UPDATE SET EXPIRE_DT = DATEADD(SS,10,GETDATE())
+									,CREATE_DT = GETDATE()
+					WHEN NOT MATCHED THEN
+				    INSERT (OTP, EXPIRE_DT, CREATE_DT)
+				    VALUES (source.OTP, DATEADD(SS,10,GETDATE()), GETDATE());
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="LinkViewService.cleanAccessKey">
+			<statement>
+				<![CDATA[
+					DELETE FROM QICS_OTP 
+					WHERE
+					EXPIRE_DT < GETDATE()
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="LinkViewService.checkAccessKey" mappingStyle="none">
+			<statement>
+				<![CDATA[
+					SELECT OTP
+					      ,EXPIRE_DT
+					      ,CREATE_DT
+					  FROM QICS_OTP
+					WHERE
+					OTP=:OTP
+					AND EXPIRE_DT > GETDATE()
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper"/>
+		</query>	
+		
+		<query id="LinkViewService.getOtherLineList" mappingStyle="none">
+			<statement>
+				<![CDATA[
+					SELECT POC_NO01 AS POC_NO01 ,
+					       IN_LINE AS LINE_CODE ,
+					       COUNT(*) AS CNT ,
+					       MIN(WORK_DATE) AS WORK_DATE ,
+					       MIN(CHKDATE) AS CHKDATE ,
+					       SUM
+					       (
+					           CASE 
+					               WHEN FORM_TYPE='M' 
+					               THEN 1 
+					               ELSE 0 
+					           END
+					       ) AS M_CNT ,
+					       SUM
+					       (
+					           CASE 
+					               WHEN FORM_TYPE='F' 
+					               THEN 1 
+					               ELSE 0 
+					           END
+					       ) AS F_CNT ,
+					       SUM
+					       (
+					           CASE 
+					               WHEN FORM_TYPE='R' 
+					               THEN 1 
+					               ELSE 0 
+					           END
+					       ) AS R_CNT ,
+					       MAX(B.E_STATUS) AS E_STATUS 
+					  FROM 
+					       (SELECT A.SEQ_Q100, 
+					              A.IN_FACT, 
+					              A.IN_ORDER, 
+					              A.IN_LINE, 
+					              A.IN_TYPE, 
+					              A.POC_NO, 
+					              A.POC_NO01, 
+					              A.POC_NO02, 
+					              A.POC_NO03, 
+					              A.POC_NO04, 
+					              A.WORK_DATE, 
+					              A.MRG_SEQ, 
+					              A.MRG_DISCRETE_NUMBER, 
+					              A.MRG_LINE_CODE, 
+					              A.MRG_STEEL_TYPE, 
+					              A.MRG_R_SUPPLIER, 
+					              A.MRG_WIP_ENTITY_NAME, 
+					              A.MRG_R_SUPPLY_THICKNESS, 
+					              A.MRG_R_WIDTH, 
+					              A.PARTIAL_WEIGHT, 
+					              A.TARGET_THICKNESS, 
+					              A.AIM_THICKNESS, 
+					              A.AIM_TOL, 
+					              A.JOB_DESCRIPTION, 
+					              A.SEQ_T300, 
+					              A.STATUS_CODE, 
+					              B.FORM_TYPE, 
+					              CASE 
+					                  WHEN A.STATUS_CODE ='R' 
+					                  THEN '출력대기' 
+					                  WHEN A.STATUS_CODE = 'P' 
+					                  THEN '검사대기' 
+					                  WHEN A.STATUS_CODE = 'S' 
+					                  THEN '검사중' 
+					                  WHEN A.STATUS_CODE = 'C' 
+					                  THEN 'ERP 전송완료' 
+					                  ELSE '' 
+					              END AS STATUS_NM, 
+					              B.CHKIP, 
+					              B.CHKDATE, 
+					              B.UPTIP, 
+					              B.UPTDATE, 
+					              B.FORM_NAME, 
+					              B.WEB_DATA_YN 
+					         FROM QICS100 A 
+					          INNER JOIN TDPP300 B 
+					              ON A.SEQ_Q100 = B.SEQ_Q100 
+					              AND A.SEQ_T300 = B.SEQ_T300 
+					        WHERE 
+					        	  A.POC_NO01 = :POC_NO01 
+					              AND B.DATA_YN='Y' 
+					              AND ISNULL(B.DELETE_YN,'N')='N'
+					       ) A 
+					   LEFT OUTER JOIN 
+					       (SELECT SEQ_Q100, 
+					              CASE 
+					                  WHEN ISNULL(PS_FILE_YN,'N') = 'N' 
+					                  THEN 'R' 
+					                  WHEN ISNULL(DATA_YN,'N') = 'N' 
+					                  THEN 'S' 
+					                  WHEN ISNULL(DATA_YN,'N') = 'Y' 
+					                  THEN 'C' 
+					                  ELSE '' 
+					              END AS E_STATUS 
+					         FROM TDPP300 
+					        WHERE POC_NO01 = :POC_NO01 
+					              AND FORM_TYPE='R' 
+					              AND ISNULL(DELETE_YN,'N')='N'
+					       ) B 
+					       ON A.SEQ_Q100 = B.SEQ_Q100  
+					 GROUP BY POC_NO01, 
+					       IN_LINE 
+					ORDER BY WORK_DATE ASC, 
+					       CHKDATE ASC
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper"/>
+		</query>	
+		
+		<query id="LinkViewService.getSheetListByLine" mappingStyle="none">
+			<statement>
+				<![CDATA[
+					SELECT A.SEQ_Q100, 
+					       A.IN_FACT, 
+					       A.IN_ORDER, 
+					       A.IN_LINE, 
+					       A.IN_TYPE, 
+					       A.POC_NO, 
+					       A.POC_NO01, 
+					       A.POC_NO02, 
+					       A.POC_NO03, 
+					       A.POC_NO04, 
+					       A.WORK_DATE, 
+					       A.MRG_SEQ, 
+					       A.MRG_DISCRETE_NUMBER, 
+					       A.MRG_LINE_CODE, 
+					       A.MRG_STEEL_TYPE, 
+					       A.MRG_R_SUPPLIER, 
+					       A.MRG_WIP_ENTITY_NAME, 
+					       A.MRG_R_SUPPLY_THICKNESS, 
+					       A.MRG_R_WIDTH, 
+					       A.PARTIAL_WEIGHT, 
+					       A.TARGET_THICKNESS, 
+					       A.AIM_THICKNESS, 
+					       A.AIM_TOL, 
+					       A.JOB_DESCRIPTION, 
+					       A.SEQ_T300, 
+					       A.STATUS_CODE, 
+					       A.ERP_UPLOAD_YN,
+					       A.FORM_TYPE, 
+					       A.STATUS_NM, 
+					       A.CHKIP, 
+					       A.CHKDATE, 
+					       A.UPTIP, 
+					       A.UPTDATE, 
+					       A.FORM_NAME, 
+					       A.WEB_DATA_YN, 
+					       B.E_STATUS,
+					       A.FRM_DAT_ID
+					  FROM 
+					       (SELECT A.SEQ_Q100, 
+					              A.IN_FACT, 
+					              A.IN_ORDER, 
+					              A.IN_LINE, 
+					              A.IN_TYPE, 
+					              A.POC_NO, 
+					              A.POC_NO01, 
+					              A.POC_NO02, 
+					              A.POC_NO03, 
+					              A.POC_NO04, 
+					              A.WORK_DATE, 
+					              A.MRG_SEQ, 
+					              A.MRG_DISCRETE_NUMBER, 
+					              A.MRG_LINE_CODE, 
+					              A.MRG_STEEL_TYPE, 
+					              A.MRG_R_SUPPLIER, 
+					              A.MRG_WIP_ENTITY_NAME, 
+					              A.MRG_R_SUPPLY_THICKNESS, 
+					              A.MRG_R_WIDTH, 
+					              A.PARTIAL_WEIGHT, 
+					              A.TARGET_THICKNESS, 
+					              A.AIM_THICKNESS, 
+					              A.AIM_TOL, 
+					              A.JOB_DESCRIPTION, 
+					              A.SEQ_T300, 
+					              A.STATUS_CODE, 
+					              B.ERP_UPLOAD_YN,
+					              B.FORM_TYPE, 
+CASE WHEN A.STATUS_CODE ='R'  THEN '출력대기'
+					 WHEN A.STATUS_CODE = 'P' AND ISNULL(B.PS_FILE_YN,'N')='N' THEN  '양식생성중'
+					 WHEN A.STATUS_CODE = 'P' AND ISNULL(B.PS_FILE_YN,'N')='Y' THEN  '검사대기'
+					 WHEN A.STATUS_CODE = 'S' AND ISNULL(B.ERP_UPLOAD_YN,'N')='N'  THEN  '검사중'
+					 WHEN A.STATUS_CODE = 'S' AND ISNULL(B.ERP_UPLOAD_YN,'N')='E'  THEN  'ERP 전송실패'
+					 WHEN A.STATUS_CODE = 'C' THEN 'ERP 전송완료'
+					 ELSE ''
+			END AS STATUS_NM,
+					              B.CHKIP, 
+					              B.CHKDATE, 
+					              B.UPTIP, 
+					              B.UPTDATE, 
+					              B.FORM_NAME, 
+					              B.WEB_DATA_YN,
+					              A.FRM_DAT_ID
+					         FROM QICS100 A 
+					          INNER JOIN TDPP300 B 
+					              ON A.SEQ_Q100 = B.SEQ_Q100 
+					              AND A.SEQ_T300 = B.SEQ_T300 
+					        WHERE A.IN_LINE = :IN_LINE 
+					        	  AND A.POC_NO01 = :POC_NO01 
+					              AND B.DATA_YN='Y' 
+					              AND ISNULL(B.DELETE_YN,'N')='N' 
+					       ) A 
+					   LEFT OUTER JOIN 
+					       (SELECT SEQ_Q100, 
+					              CASE 
+					                  WHEN ISNULL(PS_FILE_YN,'N') = 'N' 
+					                  THEN 'R' 
+					                  WHEN ISNULL(DATA_YN,'N') = 'N' 
+					                  THEN 'S' 
+					                  WHEN ISNULL(DATA_YN,'N') = 'Y' 
+					                  THEN 'C' 
+					                  ELSE '' 
+					              END AS E_STATUS 
+					         FROM TDPP300 
+					        WHERE IN_LINE = :IN_LINE 
+					        	  AND POC_NO01 = :POC_NO01 
+					              AND FORM_TYPE='R' 
+					              AND ISNULL(DELETE_YN,'N')='N'
+					       ) B 
+					       ON A.SEQ_Q100 = B.SEQ_Q100  
+					ORDER BY A.WORK_DATE ASC, 
+					       A.CHKDATE ASC
+
+
+
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper"/>
+		</query>	
+		
+	</queries>
+</queryservice>
+

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
+    <wb-module deploy-name="QICS_LOCAL">
+        <wb-resource deploy-path="/" source-path="/WebContent" tag="defaultRootSource"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/resorces"/>
+        <property name="context-root" value="QICS_LOCAL"/>
+        <property name="java-output-path" value="/QICS_LOCAL/build/classes"/>
+    </wb-module>
+</project-modules>

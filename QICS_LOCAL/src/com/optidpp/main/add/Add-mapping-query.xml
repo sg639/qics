@@ -1,0 +1,508 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<queryservice xmlns="http://www.anyframejava.org/schema/query/mapping"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.anyframejava.org/schema/query/mapping http://www.anyframejava.org/schema/query/mapping/anyframe-query-mapping-1.0.xsd ">
+	<queries>
+		<query id="getAddList">
+			<statement>
+				<![CDATA[
+						SELECT * FROM QICS100
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>		
+		<query id="addInsert" mappingStyle="none">
+			<statement>
+				<![CDATA[
+					INSERT INTO QICS100(
+					    SEQ_Q100,
+						IN_FACT,
+						IN_ORDER,
+						IN_LINE,
+						POC_NO,
+						POC_NO01,
+						POC_NO02,
+						POC_NO03,
+						MRG_SEQ,
+						MRG_DISCRETE_NUMBER,
+						MRG_LINE_CODE,
+						MRG_STEEL_TYPE,
+						MRG_R_SUPPLIER,
+						MRG_WIP_ENTITY_NAME,
+						MRG_R_SUPPLY_THICKNESS,
+						MRG_R_WIDTH,
+						PARTIAL_WEIGHT,
+						TARGET_THICKNESS,
+						AIM_THICKNESS,
+						AIM_TOL,
+						JOB_DESCRIPTION,
+						WORK_DATE,
+						STATUS_CODE,
+						CHKIP,
+						CHKDATE,
+						SEQ_TEMP
+						)
+						SELECT 
+						S.SEQ_Q100,
+						S.IN_FACT,
+						S.IN_ORDER,
+						S.IN_LINE,
+						S.POC_NO,
+						S.POC_NO01,
+						S.POC_NO02,
+						S.POC_NO03,
+						S.MRG_SEQ,
+						S.MRG_DISCRETE_NUMBER,
+						S.MRG_LINE_CODE,
+						S.MRG_STEEL_TYPE,
+						S.MRG_R_SUPPLIER,
+						S.MRG_WIP_ENTITY_NAME,
+						S.MRG_R_SUPPLY_THICKNESS,
+						S.MRG_R_WIDTH,
+						S.PARTIAL_WEIGHT,
+						S.TARGET_THICKNESS,
+						S.AIM_THICKNESS,
+						S.AIM_TOL,
+						S.JOB_DESCRIPTION,
+						S.WORK_DATE, 
+						'R' AS STATUS_CODE,
+						:authIP AS CHKIP,
+						getdate() AS CHKDATE,
+						S.SEQ_TEMP
+						FROM (
+						SELECT
+						NULL AS	SEQ_Q100,
+						NULL AS	IN_FACT,
+						NULL AS	IN_ORDER,
+						NULL AS	IN_LINE,
+						NULL AS	POC_NO,
+						NULL AS	POC_NO01,
+						NULL AS	POC_NO02,
+						NULL AS	POC_NO03,
+						NULL AS	MRG_SEQ,
+						NULL AS	MRG_DISCRETE_NUMBER,
+						NULL AS	MRG_LINE_CODE,
+						NULL AS	MRG_STEEL_TYPE,
+						NULL AS	MRG_R_SUPPLIER,
+						NULL AS	MRG_WIP_ENTITY_NAME,
+						NULL AS	MRG_R_SUPPLY_THICKNESS,
+						NULL AS	MRG_R_WIDTH,
+						NULL AS	PARTIAL_WEIGHT,
+						NULL AS	TARGET_THICKNESS,
+						NULL AS	AIM_THICKNESS,
+						NULL AS	AIM_TOL,
+						NULL AS	JOB_DESCRIPTION,
+						NULL AS WORK_DATE,
+						NULL AS SEQ_TEMP						 
+#foreach( $rm in $insertRows )
+						UNION ALL
+						SELECT
+						LTRIM('$rm.SEQ_Q100') AS SEQ_Q100,
+						LTRIM('$rm.IN_FACT') AS IN_FACT,
+						LTRIM('$rm.IN_ORDER') AS IN_ORDER,
+						LTRIM('$rm.IN_LINE') AS IN_LINE,
+						LTRIM('$rm.POC_NO') AS POC_NO,
+						LTRIM('$rm.POC_NO01') AS POC_NO01,
+						LTRIM('$rm.POC_NO02') AS POC_NO02,
+						LTRIM('$rm.POC_NO03') AS POC_NO03,
+						LTRIM('$rm.MRG_SEQ') AS MRG_SEQ,
+						LTRIM('$rm.MRG_DISCRETE_NUMBER') AS MRG_DISCRETE_NUMBER,
+						LTRIM('$rm.MRG_LINE_CODE') AS MRG_LINE_CODE,
+						LTRIM('$rm.MRG_STEEL_TYPE') AS MRG_STEEL_TYPE,
+						LTRIM('$rm.MRG_R_SUPPLIER') AS MRG_R_SUPPLIER,
+						LTRIM('$rm.MRG_WIP_ENTITY_NAME') AS MRG_WIP_ENTITY_NAME,
+						LTRIM('$rm.MRG_R_SUPPLY_THICKNESS') AS MRG_R_SUPPLY_THICKNESS,
+						LTRIM('$rm.MRG_R_WIDTH') AS MRG_R_WIDTH,
+						LTRIM('$rm.PARTIAL_WEIGHT') AS PARTIAL_WEIGHT,
+						LTRIM('$rm.TARGET_THICKNESS') AS TARGET_THICKNESS,
+						LTRIM('$rm.AIM_THICKNESS') AS AIM_THICKNESS,
+						LTRIM('$rm.AIM_TOL') AS AIM_TOL,
+						LTRIM('$rm.JOB_DESCRIPTION') AS JOB_DESCRIPTION,
+						LTRIM('$rm.WORK_DATE') AS WORK_DATE,
+						LTRIM('$rm.SEQ_TEMP') AS SEQ_TEMP
+#end
+						)S
+						WHERE S.SEQ_Q100 IS NOT NULL
+
+
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="getSeqQ100" mappingStyle="none">
+			<statement>
+					{? = call dbo.usp_SeqQ100 (?) }
+			</statement>
+			<param type="VARCHAR" binding="OUT" name="SEQ_Q100" />
+            <param type="VARCHAR" binding="IN" name="inVal" />
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="getSeqTemp" mappingStyle="none">
+			<statement>
+					{? = call dbo.usp_SeqTemp (?) }
+			</statement>
+			<param type="VARCHAR" binding="OUT" name="SEQ_TEMP" />
+            <param type="VARCHAR" binding="IN" name="inVal" />
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="getCheckList" mappingStyle="none">
+			<statement>
+				<![CDATA[
+					SELECT A.SEQ_Q100, A.IN_LINE, A.POC_NO, A.WORK_DATE, B.SEQ_T300, B.DELETE_YN,B.DATA_YN, ISNULL(B.ERP_UPLOAD_YN,'N') AS ERP_UPLOAD_YN FROM (SELECT * FROM QICS100
+					WHERE ISNULL(DEL_YN,'N') ='N'
+					AND IN_LINE =:IN_LINE
+					AND WORK_DATE=:WORK_DATE) A LEFT OUTER JOIN TDPP300 B
+					ON A.SEQ_Q100 = B.SEQ_Q100
+					AND A.SEQ_T300 = B.SEQ_T300
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		
+		<query id="saveTempViewToQics100"  mappingStyle="none">
+			<statement>
+				<![CDATA[
+					INSERT INTO TEMP_QICS(
+						      POC_NO
+							, FACTORY_CODE
+							, ORDER_NO
+							, LINE_CODE
+							, OPER_CODE
+							, OPER_SEQ
+							, ORD_STATUS
+							, ORD_STATUS_DESC
+							, ORDER_START_TIME
+							, ORDER_END_TIME
+							, FLOW_CODE
+							, MAT_CODE
+							, MAT_DESC
+							, CUSTOMER_CODE
+							, CUSTOMER_DESC
+							, DELV_CODE
+							, DELV_DESC
+							, END_USER_CODE
+							, END_USER_DESC
+							, STEEL_TYPE
+							, STEEL_TYPE_DESC
+							, STEEL_GROUP
+							, SALES_ORDER_ROW_NO
+							, SALES_ORDER_NO
+							, SALES_ORDER_NO_SEQ
+							, PROD_ORDER_TYPE
+							, DEMAND_THICK
+							, DEMAND_THICK_DESC
+							, DEMAND_WIDTH
+							, ORDER_WIDTH
+							, ORD_QTY
+							, SURFACE
+							, REMARK
+							, PREV_OPER_CODE
+							, NEXT_OPER_CODE
+							, HEAT_NO
+							, PASS_CNT
+							, RAW_VENDOR_CODE
+							, RAW_VENDOR_DESC
+							, MTI_FLAG
+							, FTI_FLAG
+							, ORD_COMMENT
+							, USAGE_CODE
+							, USAGE_DESC
+							, ILLUMINANCE_CUT_OFF
+							, THICK_ALLOWANCE_MM_MIN
+							, THICK_ALLOWANCE_MM_MAX
+							, WIDTH_ALLOWANCE_MM_MIN
+							, WIDTH_ALLOWANCE_MM_MAX
+							, MILLING_LINE
+							, MILLING_WORK_GROUP
+							, RAW_BET_PAPER
+							, FINAL_AIM
+							, TRD_AIM
+							, SND_AIM
+							, FST_AIM
+							, STANDARD_TYPE
+							, PASS_GRADE
+							, GOCHING_G
+							, AIM_G
+							, SEQ_TEMP
+							, WIP_WIDTH
+							, WIP_THICK
+							, WIP_QTY
+							, RAW_WIDTH
+							, RAW_THICK
+							, RAW_QTY
+					) SELECT 
+					          :POC_NO
+							, :FACTORY_CODE
+							, :ORDER_NO
+							, :LINE_CODE
+							, :OPER_CODE
+							, ISNULL(:OPER_SEQ,NULL)
+							, :ORD_STATUS
+							, :ORD_STATUS_DESC
+							, :ORDER_START_TIME
+							, :ORDER_END_TIME
+							, :FLOW_CODE
+							, :MAT_CODE
+							, :MAT_DESC
+						    , :CUSTOMER_CODE
+							, :CUSTOMER_DESC
+							, :DELV_CODE
+							, :DELV_DESC
+							, :END_USER_CODE
+							, :END_USER_DESC
+							, :STEEL_TYPE
+							, :STEEL_TYPE_DESC
+							, :STEEL_GROUP
+							, :SALES_ORDER_ROW_NO
+							, :SALES_ORDER_NO
+							, :SALES_ORDER_NO_SEQ
+							, :PROD_ORDER_TYPE
+							, :DEMAND_THICK
+							, :DEMAND_THICK_DESC
+							, :DEMAND_WIDTH
+							, :ORDER_WIDTH
+							, ISNULL(:ORD_QTY,NULL)
+							, :SURFACE
+							, :REMARK
+							, :PREV_OPER_CODE
+							, :NEXT_OPER_CODE
+							, :HEAT_NO
+							, :PASS_CNT
+							, :RAW_VENDOR_CODE
+							, :RAW_VENDOR_DESC
+							, :MTI_FLAG
+							, :FTI_FLAG
+							, :ORD_COMMENT
+							, :USAGE_CODE
+							, :USAGE_DESC
+							, :ILLUMINANCE_CUT_OFF
+							, ISNULL(:THICK_ALLOWANCE_MM_MIN,NULL)
+							, ISNULL(:THICK_ALLOWANCE_MM_MAX,NULL)
+							, ISNULL(:WIDTH_ALLOWANCE_MM_MIN,NULL)
+							, ISNULL(:WIDTH_ALLOWANCE_MM_MAX,NULL)
+							, :MILLING_LINE
+							, :MILLING_WORK_GROUP
+							, :RAW_BET_PAPER
+							, :FINAL_AIM
+							, :TRD_AIM
+							, :SND_AIM
+							, :FST_AIM
+							, :STANDARD_TYPE
+							, :PASS_GRADE
+							, :GOCHING_G
+							, :AIM_G
+							, :SEQ_TEMP
+							, :WIP_WIDTH
+							, :WIP_THICK
+							, ISNULL(:WIP_QTY,NULL)
+							, :RAW_WIDTH
+							, :RAW_THICK
+							, ISNULL(:RAW_QTY,NULL)
+					WHERE :POC_NO NOT IN (SELECT POC_NO FROM QICS100)
+					  AND :POC_NO NOT IN (SELECT POC_NO FROM TEMP_QICS)
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		
+		<query id="getTempQics100List" mappingStyle="none">
+			<statement>
+				<![CDATA[
+					SELECT 
+							FACTORY_CODE,
+							OPER_CODE,
+							POC_NO,
+							ORDER_NO,
+							OPER_CODE,
+							STEEL_TYPE,
+							RAW_VENDOR_DESC,
+							DEMAND_THICK,
+							DEMAND_WIDTH,
+							ORD_QTY,
+							GOCHING_G,
+							FINAL_AIM,
+							AIM_G,
+							ORD_COMMENT
+						FROM		TEMP_QICS
+						WHERE	POC_NO NOT IN (SELECT POC_NO FROM QICS100)
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="insertQics100"  mappingStyle="none">
+			<statement>
+				<![CDATA[
+					INSERT INTO QICS100(
+						SEQ_Q100,
+						IN_FACT,
+						IN_LINE,
+						POC_NO,
+						MRG_DISCRETE_NUMBER,
+						MRG_LINE_CODE,
+						MRG_STEEL_TYPE,
+						MRG_R_SUPPLIER,
+						MRG_WIP_ENTITY_NAME,
+						MRG_R_SUPPLY_THICKNESS,
+						MRG_R_WIDTH,
+						PARTIAL_WEIGHT,
+						TARGET_THICKNESS,
+						AIM_THICKNESS,
+						AIM_TOL,
+						JOB_DESCRIPTION,
+						WORK_DATE,
+						STATUS_CODE
+						) VALUES (
+						:SEQ_Q100
+						, :IN_FACT
+						, :IN_LINE
+						, :POC_NO
+						, :MRG_DISCRETE_NUMBER
+						, :MRG_LINE_CODE
+						, :MRG_STEEL_TYPE
+						, :MRG_R_SUPPLIER
+						, :POC_NO
+						, :MRG_R_SUPPLY_THICKNESS
+						, :MRG_R_WIDTH
+						, :PARTIAL_WEIGHT
+						, :TARGET_THICKNESS
+						, :AIM_THICKNESS
+						, :AIM_TOL
+						, :JOB_DESCRIPTION
+						, :WORK_DATE
+						, 'R')
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="deleteTempQics">
+			<statement>
+				<![CDATA[
+						DELETE FROM TEMP_QICS
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="workList111" mappingStyle="none">
+			<statement>
+				<![CDATA[
+					SELECT
+								IN_FACT
+								, IN_ORDER
+								, IN_LINE
+								, IN_TYPE
+								, POC_NO
+								, POC_NO01
+								, POC_NO02
+								, POC_NO03
+								, MRG_DISCRETE_NUMBER
+								, MRG_LINE_CODE
+								, MRG_STEEL_TYPE
+								, MRG_R_SUPPLIER
+								, MRG_WIP_ENTITY_NAME
+								, MRG_R_SUPPLY_THICKNESS
+								, MRG_R_WIDTH
+								, PARTIAL_WEIGHT
+								, TARGET_THICKNESS
+								, AIM_THICKNESS
+								, AIM_TOL
+								, JOB_DESCRIPTION
+					FROM		QICS100
+					WHERE	WORK_DATE =:WORK_DATE
+					AND		IN_LINE =:IN_LINE
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<!-- 작업추가 쿼리 -->
+		<query id="workList" mappingStyle="none">
+			<statement>
+				<![CDATA[
+					SELECT
+								FACTORY_CODE AS IN_FACT
+								, NULL AS IN_ORDER
+								, OPER_CODE AS IN_LINE
+								, NULL AS IN_TYPE
+								, POC_NO AS POC_NO
+								, NULL AS POC_NO01
+								, NULL AS POC_NO02
+								, NULL AS POC_NO03
+								, ORDER_NO AS MRG_DISCRETE_NUMBER
+								, OPER_CODE AS MRG_LINE_CODE
+								, STEEL_TYPE AS MRG_STEEL_TYPE
+								, RAW_VENDOR_DESC AS MRG_R_SUPPLIER
+								, ISNULL(DEMAND_THICK_DESC,ISNULL(RAW_THICK,WIP_THICK)) AS MRG_R_SUPPLY_THICKNESS
+								, ISNULL(ORDER_WIDTH,ISNULL(RAW_WIDTH,WIP_WIDTH)) AS MRG_R_WIDTH
+								, POC_NO AS MRG_WIP_ENTITY_NAME
+								, ORD_QTY AS PARTIAL_WEIGHT
+								, GOCHING_G AS TARGET_THICKNESS
+								, FINAL_AIM AS AIM_THICKNESS
+								, AIM_G AS AIM_TOL
+								, ORD_COMMENT AS JOB_DESCRIPTION
+								, SEQ_TEMP
+								, DENSE_RANK() OVER (ORDER BY ORDER_NO, POC_NO) AS MRG_SEQ
+								, (SELECT FORM_CODE FROM TSYS100 WHERE CODE_GUBUN = 'UFS_RESOURCE' AND USED_YN  = 'Y' AND CODE = TEMP_QICS.OPER_CODE) AS FORM_CODE
+					FROM		TEMP_QICS
+					WHERE	OPER_CODE =:POP_LINE
+					AND 	POC_NO NOT IN (SELECT POC_NO FROM QICS100)
+					AND     CASE WHEN LEN(:IN_POCNO) = 0 THEN POC_NO ELSE :IN_POCNO END = POC_NO
+					AND     CASE WHEN LEN(:IN_DISCRETE_NUMBER) = 0 THEN ORDER_NO ELSE :IN_DISCRETE_NUMBER END = ORDER_NO --작지번호
+					AND     CASE WHEN LEN(:IN_STEEL_GROUP) = 0 THEN STEEL_GROUP ELSE :IN_STEEL_GROUP END = STEEL_GROUP --대강종
+					AND     CASE WHEN LEN(:IN_TYPE) = 0 THEN ORD_STATUS ELSE :IN_TYPE END = ORD_STATUS --상태
+					AND     CASE WHEN LEN(:IN_SURFACE) = 0 THEN SURFACE ELSE :IN_SURFACE END = SURFACE --표면
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="addQcMapping"  mappingStyle="none">
+			<statement>
+				<![CDATA[
+					INSERT 
+					INTO	QICSDP.dbo.QC_MAPPING
+						(
+							QC_DESIGN_ID,
+							QC_NO,
+							BODY_COPY_NO,
+							BASE_COPY_NO,
+							REG_DTM,
+							SEQ_TEMP
+						) VALUES 
+						(
+							:QC_DESIGN_ID,
+							:QC_NO,
+							(SELECT ISNULL(MAX(BODY_COPY_NO),0) + 1 FROM QICSDP.dbo.QC_MAPPING),
+							:BASE_COPY_NO,
+							FORMAT(CAST(GETDATE() as DATETIME), 'yyyyMMddHHmmss'),
+							:SEQ_TEMP
+						)
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="addQcMapping2"  mappingStyle="none">
+			<statement>
+				<![CDATA[
+					INSERT 
+					INTO	QICSDP.dbo.QC_MAPPING
+						(
+							QC_DESIGN_ID,
+							QC_NO,
+							BODY_COPY_NO,
+							BASE_COPY_NO,
+							REG_DTM,
+							SEQ_TEMP
+						) VALUES 
+						(
+							:QC_DESIGN_ID,
+							CONCAT(SUBSTRING(:QC_NO,1,CHARINDEX('-',:QC_NO)),:POCCHECK),
+							(SELECT ISNULL(MAX(BODY_COPY_NO),0) + 1 FROM QICSDP.dbo.QC_MAPPING),
+							:BASE_COPY_NO,
+							FORMAT(CAST(GETDATE() as DATETIME), 'yyyyMMddHHmmss'),
+							:SEQ_TEMP
+						)
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+	</queries>
+</queryservice>
+

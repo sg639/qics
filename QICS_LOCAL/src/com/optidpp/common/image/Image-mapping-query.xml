@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<queryservice xmlns="http://www.anyframejava.org/schema/query/mapping"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.anyframejava.org/schema/query/mapping http://www.anyframejava.org/schema/query/mapping/anyframe-query-mapping-1.0.xsd ">
+	<queries>
+		<query id="getDownloadImageInfo" mappingStyle="none">
+			<statement>
+				<![CDATA[
+						SELECT A.P_BG, A.P_BG_PATH, B.IN_LINE, B.WORK_DATE, B.POC_NO FROM TDPP211 A INNER JOIN TDPP300 B
+							ON A.SEQ_T300 = B.SEQ_T300
+						WHERE A.SEQ_T300 =:SEQ_T300
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>		
+	</queries>
+</queryservice>
+

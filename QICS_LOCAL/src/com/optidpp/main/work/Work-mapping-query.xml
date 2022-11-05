@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<queryservice xmlns="http://www.anyframejava.org/schema/query/mapping"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.anyframejava.org/schema/query/mapping http://www.anyframejava.org/schema/query/mapping/anyframe-query-mapping-1.0.xsd ">
+	<queries>
+		<query id="getWorkList" mappingStyle="none">
+			<statement>
+				<![CDATA[
+						SELECT  
+							A.SEQ_Q100,
+							A.IN_FACT,
+							A.IN_ORDER,
+							A.IN_LINE,
+							A.IN_TYPE,
+							B.POC_NO,
+							B.POC_NO01,
+							B.POC_NO02,
+							B.POC_NO03,
+							B.POC_NO04,
+							A.MRG_SEQ,
+							A.WORK_DATE,
+							A.WORK_COUNT,
+							A.MRG_DISCRETE_NUMBER,
+							A.MRG_LINE_CODE,
+							A.MRG_STEEL_TYPE,
+							A.MRG_R_SUPPLIER,
+							A.MRG_WIP_ENTITY_NAME,
+							A.MRG_R_SUPPLY_THICKNESS,
+							A.MRG_R_WIDTH,
+							A.PARTIAL_WEIGHT,
+							A.TARGET_THICKNESS,
+							A.AIM_THICKNESS,
+							A.AIM_TOL,
+							A.JOB_DESCRIPTION,
+							A.STATUS_CODE,
+							B.SEQ_T300,
+							B.WEB_DATA_YN,
+							A.IN_LINE + ' ' +B.FORM_NAME AS FORM_NAME,
+							B.C_CHK_NO,
+							B.C_CHKER,
+							B.DATA_YN,
+							B.ERP_UPLOAD_YN,
+							B.ERP_UPLOAD_MESSAGE,
+							B.PS_FILE_YN,
+							B.FORM_SEQ,
+							C.FORM_CODE,
+							B.NG_CODE,
+							B.C_STD01,
+							B.C_STD02,
+							B.C_LEN,
+							B.C_PP,
+							B.C_LV,
+	CASE WHEN A.STATUS_CODE ='R'  THEN '출력대기'
+			 WHEN A.STATUS_CODE = 'P' AND ISNULL(B.PS_FILE_YN,'N')='N' THEN  '양식생성중'
+			 WHEN A.STATUS_CODE = 'P' AND ISNULL(B.PS_FILE_YN,'N')='Y' THEN  '검사대기'
+			 WHEN A.STATUS_CODE = 'S' AND ISNULL(B.ERP_UPLOAD_YN,'N')='N' THEN '검사중'
+			 WHEN A.STATUS_CODE = 'S' AND ISNULL(B.ERP_UPLOAD_YN,'N')='E'  THEN 'ERP 전송실패'
+			 WHEN A.STATUS_CODE = 'C' THEN 'ERP 전송완료'
+			 ELSE ''
+	END AS STATUS_NM
+							
+							FROM QICS100 A INNER JOIN TDPP300 B
+							ON A.SEQ_T300 = B.SEQ_T300
+							AND A.SEQ_Q100= B.SEQ_Q100
+							AND ISNULL(B.DATA_YN,'N')='Y'
+							AND ISNULL(B.DELETE_YN,'N')='N'
+							AND B.FORM_TYPE IN ('M','F')
+							INNER JOIN TDPP201 C
+							ON B.FORM_SEQ = C.FORM_SEQ
+					
+							
+					#if($ON_POC_NO && !$ON_POC_NO.equals("")  )
+						AND B.POC_NO LIKE '%' + :ON_POC_NO + '%' 
+					#else
+							#if($ON_LINE && !$ON_LINE.equals("")  )
+								AND A.IN_LINE = :ON_LINE  
+							#else
+									
+							#end
+							
+							#if($C_CHK_NO && !$C_CHK_NO.equals("")  )
+								AND ISNULL(B.C_CHK_NO,'XXX') = :C_CHK_NO
+							#else
+									
+							#end
+							
+							#if($C_CHKER && !$C_CHKER.equals("")  )
+								AND ISNULL(B.C_CHKER,'XXX') LIKE '%' + :C_CHKER + '%' 
+							#else
+									
+							#end
+							
+							#if($C_LV && !$C_LV.equals("")  )
+								AND B.C_LV LIKE '%' + :C_LV + '%' 
+							#else
+									
+							#end			
+											
+							AND CASE WHEN ISNULL(B.DATA_YN,'N')='Y' AND ISNULL(B.ERP_UPLOAD_YN,'N')='N' THEN 'W' 
+							         WHEN ISNULL(B.DATA_YN,'N')='Y' AND ISNULL(B.ERP_UPLOAD_YN,'N')='E' THEN 'E' 
+									 ELSE 'C' END LIKE '%' +  :STATUS_CODE + '%' 
+							--AND CONVERT(int,CONVERT(char(8) ,CONVERT(DATETIME,B.WORK_DATE),112)) between CONVERT(int,CONVERT(char(8) ,CONVERT(DATETIME,:FROM_DATE),112)) and CONVERT(int,CONVERT(char(8) ,CONVERT(DATETIME,:END_DATE),112))
+						AND A.WORK_DATE >= (CASE WHEN :FROM_DATE ='' THEN '1900/01/01' ELSE :FROM_DATE END) 
+						AND A.WORK_DATE <= CASE WHEN  :END_DATE='' THEN '9999/12/31' ELSE :END_DATE END	
+					#end
+	ORDER BY A.WORK_DATE DESC, B.POC_NO, A.SEQ_Q100 DESC
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>		
+		<query id="getPrintList" mappingStyle="none">
+			<statement>
+				<![CDATA[
+SELECT A.POC_NO, A.SEQ_Q100, A.SEQ_T300, A.IN_LINE,A.POC_NO, A.FORM_SEQ, A.FORM_NAME, B.FORM_ID, A.PS_FILE_PATH, A.PS_FILE_NAME, ISNULL(A.PS_FILE_YN,'N') AS PS_FILE_YN FROM TDPP300 A INNER JOIN TDPP201 B
+								ON A.FORM_SEQ = B.FORM_SEQ
+							WHERE ISNULL(A.DATA_YN,'N')='N'
+							AND ISNULL(A.DELETE_YN,'N')='N'
+							AND A.IN_LINE = :IN_LINE
+							AND A.WORK_DATE =  :WORK_DATE
+UNION 
+SELECT A.POC_NO, A.SEQ_Q100, A.SEQ_T300, A.IN_LINE,A.POC_NO, A.FORM_SEQ, A.FORM_NAME, B.FORM_ID, A.PS_FILE_PATH, A.PS_FILE_NAME, ISNULL(A.PS_FILE_YN,'N') AS PS_FILE_YN FROM TDPP300 A INNER JOIN TDPP201 B
+								ON A.FORM_SEQ = B.FORM_SEQ
+							WHERE 
+							A.SEQ_Q100 IN (
+							SELECT A.SEQ_Q100 FROM TDPP300 A 
+							WHERE A.IN_LINE = :IN_LINE
+							AND A.WORK_DATE =  :WORK_DATE
+							)
+							AND FORM_TYPE='R'
+							AND ISNULL(A.DATA_YN,'N')='N'
+							AND ISNULL(A.DELETE_YN,'N')='N'
+
+ORDER BY 1,3				
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="getWorkInfo" mappingStyle="none">
+			<statement>
+				<![CDATA[
+					SELECT SEQ_T300, SEQ_Q100, IN_LINE, WORK_DATE FROM TDPP300
+						WHERE SEQ_Q100 = (SELECT SEQ_Q100 FROM TDPP300 WHERE SEQ_T300 =:SEQ_T300 )
+						AND FORM_TYPE IN ('M','F')
+						AND ISNULL(DELETE_YN,'N')='N'
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+	</queries>
+</queryservice>
+

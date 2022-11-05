@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<queryservice xmlns="http://www.anyframejava.org/schema/query/mapping"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.anyframejava.org/schema/query/mapping http://www.anyframejava.org/schema/query/mapping/anyframe-query-mapping-1.0.xsd ">
+	<queries>
+		<query id="saveUrgency">
+			<statement>
+				<![CDATA[
+				INSERT INTO QICS100(
+					    SEQ_Q100,
+						IN_FACT,
+						IN_ORDER,
+						IN_LINE,
+						IN_TYPE,
+						POC_NO,
+						POC_NO01,
+						POC_NO02,
+						POC_NO03,
+						MRG_STEEL_TYPE,
+						MRG_R_SUPPLIER,
+						MRG_WIP_ENTITY_NAME,
+						MRG_R_SUPPLY_THICKNESS,
+						MRG_R_WIDTH,
+						WORK_DATE,
+						URGENCY_YN,
+						STATUS_CODE,
+						CHKIP,
+						CHKDATE
+						) VALUES (
+							:SEQ_Q100,
+							:IN_FACT,
+							:IN_ORDER,
+							:IN_LINE,
+							:IN_TYPE,
+							:POC_NO,
+							:POC_NO01,
+							:POC_NO02,
+							:POC_NO03,
+							:MRG_STEEL_TYPE,
+							:MRG_R_SUPPLIER,
+							:MRG_WIP_ENTITY_NAME,
+							:MRG_R_SUPPLY_THICKNESS,
+							:MRG_R_WIDTH,
+							:WORK_DATE,
+							:URGENCY_YN,
+							'R',
+							:authIP,
+							getdate()
+						)
+					
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>		
+	</queries>
+</queryservice>
+

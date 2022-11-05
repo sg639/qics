@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<queryservice xmlns="http://www.anyframejava.org/schema/query/mapping"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.anyframejava.org/schema/query/mapping http://www.anyframejava.org/schema/query/mapping/anyframe-query-mapping-1.0.xsd ">
+	<queries>
+		<query id="getDivideInfo" mappingStyle="none">
+			<statement>
+				<![CDATA[
+						SELECT 
+							A.SEQ_Q100,
+							A.IN_FACT,
+							A.IN_ORDER,
+							A.IN_LINE,
+							A.IN_TYPE,
+							A.POC_NO,
+							A.POC_NO01,
+							A.POC_NO02,
+							A.POC_NO03,
+							A.POC_NO04,
+							A.WORK_DATE,
+							A.MRG_SEQ,
+							A.MRG_DISCRETE_NUMBER,
+							A.MRG_LINE_CODE,
+							A.MRG_STEEL_TYPE,
+							A.MRG_R_SUPPLIER,
+							A.MRG_WIP_ENTITY_NAME,
+							A.MRG_R_SUPPLY_THICKNESS,
+							A.MRG_R_WIDTH,
+							A.PARTIAL_WEIGHT,
+							A.TARGET_THICKNESS,
+							A.AIM_THICKNESS,
+							A.AIM_TOL,
+							A.JOB_DESCRIPTION,
+							A.SEQ_T300,
+							A.STATUS_CODE,
+						   CASE WHEN A.STATUS_CODE ='R' THEN '출력대기'
+						 		     WHEN A.STATUS_CODE = 'P'  THEN '검사대기'
+						  		     WHEN A.STATUS_CODE = 'S'  THEN '검사중'
+						             WHEN A.STATUS_CODE = 'C' THEN 'ERP 전송완료'
+						             ELSE ''
+							END AS STATUS_NM,
+							B.FORM_TYPE,
+							C.FORM_ID
+						FROM QICS100 A INNER JOIN TDPP300 B
+						ON A.SEQ_Q100 = B.SEQ_Q100 
+						AND A.SEQ_T300 = B.SEQ_T300
+						INNER JOIN TDPP201 C
+						ON B.FORM_SEQ= C.FORM_SEQ
+						AND A.SEQ_Q100=:SEQ_Q100
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>		
+	</queries>
+</queryservice>
+

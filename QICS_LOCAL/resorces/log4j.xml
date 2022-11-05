@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout pattern="%d %5p [%c::%M] %m%n" />
+		</Console>
+
+		 <RollingFile name="RollingFile" fileName="${webapp.root}/WEB-INF/logs/test.log" filePattern="${webapp.root}/WEB-INF/logs/test_%d{yyyy-MM-dd}.log" append="true">
+		</RollingFile>
+	</appenders>
+
+	<Loggers>
+		<!--
+			logger의 name에는 class 속성이 들어간다.
+			문제는 현재 프로젝트는 src밑에 개별로 package를 쪼개놔서 이를 설정하기가 애매해보인다.
+			그냥 각각 logger 설정-_-;
+			additivity => 로그 중복여부, ROOT와 중복될 경우 한곳에서만 출력
+		-->
+		<Logger name="com.optidpp" level="DEBUG" additivity="true">
+			<AppenderRef ref="RollingFile" />
+			<!-- <AppenderRef ref="RollingFile" /> -->
+		</Logger>
+
+		<Logger name="org.springframework" level="ERROR" additivity="true">
+			<AppenderRef ref="RollingFile" />
+			<!-- <AppenderRef ref="RollingFile" /> -->
+		</Logger>
+
+		<Logger name="org.anyframe" level="ERROR" additivity="true">
+			<AppenderRef ref="RollingFile" />
+			<!-- <AppenderRef ref="RollingFile" /> -->
+		</Logger>
+
+		<Logger name="log4jdbc.log4j2" level="INFO" additivity="false">
+			<!-- resultset 보고 싶을때는 아래 markerfilter 주석바람. -->
+			<!--
+			<MarkerFilter marker="LOG4JDBC_OTHER" onMatch="DENY" onMismatch="NEUTRAL"/>
+			-->
+			<AppenderRef ref="RollingFile"/>
+			<!-- <AppenderRef ref="RollingFile" /> -->
+		</Logger>
+
+		<!-- console 에 출력하는건 ROOT를 사용하게 함 -->
+		<Root level="DEBUG">
+			<!-- <AppenderRef ref="RollingFile" />  -->
+		</Root>
+	</Loggers>
+</configuration>

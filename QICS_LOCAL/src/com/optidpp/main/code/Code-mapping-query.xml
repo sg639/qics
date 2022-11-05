@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<queryservice xmlns="http://www.anyframejava.org/schema/query/mapping"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.anyframejava.org/schema/query/mapping http://www.anyframejava.org/schema/query/mapping/anyframe-query-mapping-1.0.xsd ">
+	<queries>
+		<query id="getCodeList" mappingStyle="none">
+			<statement>
+				<![CDATA[
+					SELECT 
+						CODE,
+						CODE_GUBUN,
+						CASE WHEN ISNULL(ATTRIBUTE1, '') = '' THEN CODE
+											 ELSE ATTRIBUTE1 END AS ATTRIBUTE1,
+						ATTRIBUTE2,
+						ATTRIBUTE3,
+						ATTRIBUTE4,
+						ATTRIBUTE5,
+						FORM_TYPE,
+						FORM_CODE
+					FROM TSYS100
+					WHERE USED_YN ='Y'
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>		
+		<query id="getPodCodeList" mappingStyle="none">
+			<statement>
+				<![CDATA[
+					SELECT * FROM TSYS100
+					WHERE CODE_GUBUN IN ('DEPT_NAME' , 'QICS_APPROVE')
+					AND USED_YN ='Y'
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="getPodCodeList2" mappingStyle="none">
+			<statement>
+				<![CDATA[
+					SELECT * FROM TSYS100
+					WHERE CODE_GUBUN IN ('DEPT_NAME' , 'QICS_APPROVE')
+					AND USED_YN ='Y'
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="getSteelDescMap" mappingStyle="none">
+			<statement>
+				<![CDATA[
+					SELECT * FROM TSYS100
+					WHERE CODE_GUBUN ='STEEL'
+					AND CODE =:C_STP
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+	</queries>
+</queryservice>
+

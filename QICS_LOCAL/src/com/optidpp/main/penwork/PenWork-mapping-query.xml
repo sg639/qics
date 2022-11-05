@@ -1,0 +1,1156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<queryservice xmlns="http://www.anyframejava.org/schema/query/mapping"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.anyframejava.org/schema/query/mapping http://www.anyframejava.org/schema/query/mapping/anyframe-query-mapping-1.0.xsd ">
+	<queries>
+		<query id="getPenWorkList" mappingStyle="none">
+			<statement>
+				<![CDATA[
+
+		SELECT 
+			A.SEQ_Q100,
+			A.IN_FACT,
+			A.IN_ORDER,
+			A.IN_LINE,
+			A.IN_TYPE,
+			A.POC_NO,
+			A.POC_NO01,
+			A.POC_NO02,
+			A.POC_NO03,
+			A.POC_NO04,
+			A.FRM_DAT_ID,
+			A.WORK_DATE,
+			A.MRG_SEQ,
+			A.MRG_DISCRETE_NUMBER,
+			A.MRG_LINE_CODE,
+			D.STEEL_TYPE_DESC AS MRG_STEEL_TYPE,
+			A.MRG_R_SUPPLIER,
+			A.MRG_WIP_ENTITY_NAME,
+			ISNULL(D.DEMAND_THICK_DESC,ISNULL(D.RAW_THICK,D.WIP_THICK)) AS MRG_R_SUPPLY_THICKNESS,
+			ISNULL(D.ORDER_WIDTH,ISNULL(D.RAW_WIDTH,D.WIP_WIDTH)) AS MRG_R_WIDTH,
+			A.PARTIAL_WEIGHT,
+			A.TARGET_THICKNESS,
+			A.AIM_THICKNESS,
+			A.AIM_TOL,
+			A.JOB_DESCRIPTION,
+			A.SEQ_T300,
+			A.STATUS_CODE,
+			B.FORM_TYPE,
+			C.FORM_SEQ,
+			C.FORM_CODE,
+			(SELECT 
+		CASE WHEN ISNULL(PS_FILE_YN,'N') = 'N' THEN 'R'
+			 WHEN ISNULL(DATA_YN,'N') = 'N' THEN 'S'
+			 WHEN ISNULL(DATA_YN,'N') = 'Y' THEN 'C'
+			 ELSE '' END AS E_STATUS
+		FROM TDPP300  D
+		WHERE IN_LINE = A.IN_LINE
+		AND SEQ_Q100 =A.SEQ_Q100
+		AND FORM_TYPE='R') AS E_STATUS,
+		   CASE WHEN A.STATUS_CODE ='R'  THEN '출력대기'
+					 WHEN A.STATUS_CODE = 'P' AND ISNULL(B.PS_FILE_YN,'N')='N' THEN  '양식생성중'
+					 WHEN A.STATUS_CODE = 'P' AND ISNULL(B.PS_FILE_YN,'N')='Y' THEN  '검사대기'
+					 WHEN A.STATUS_CODE = 'S' AND ISNULL(B.ERP_UPLOAD_YN,'N')='N'  THEN  '검사중'
+					 WHEN A.STATUS_CODE = 'S' AND ISNULL(B.ERP_UPLOAD_YN,'N')='E'  THEN  'ERP 전송실패'
+					 WHEN A.STATUS_CODE = 'C' THEN 'ERP 전송완료'
+					 ELSE ''
+			END AS STATUS_NM,
+			A.CHKIP,
+			A.CHKDATE,
+			A.UPTIP,
+			A.UPTDATE,
+			C.FORM_NAME,
+			B.WEB_DATA_YN,
+			B.PS_FILE_YN,
+			B.ERP_UPLOAD_YN,
+			CASE WHEN A.STATUS_CODE ='R'  THEN 800 --'출력대기'
+					 WHEN A.STATUS_CODE = 'P' AND ISNULL(B.PS_FILE_YN,'N')='N' THEN 800 --'양식생성중'
+					 WHEN A.STATUS_CODE = 'P' AND ISNULL(B.PS_FILE_YN,'N')='Y' THEN 800 --'검사대기'
+					 WHEN A.STATUS_CODE = 'S' AND ISNULL(B.ERP_UPLOAD_YN,'N')='N'  THEN 800 --'검사중'
+					 WHEN A.STATUS_CODE = 'S' AND ISNULL(B.ERP_UPLOAD_YN,'N')='E'   THEN 800 --'ERP 전송실패'
+					 WHEN A.STATUS_CODE = 'C' THEN 999 --'ERP 전송완료'
+					 ELSE 100
+			END AS STATUS_ORDER,
+			A.SEQ_TEMP,
+			dbo.fn_SeqTempList(A.SEQ_TEMP) AS SEQ_TEMP_LIST
+		FROM QICS100 A LEFT OUTER JOIN TDPP300 B
+		ON A.SEQ_Q100 = B.SEQ_Q100 
+		AND A.SEQ_T300 = B.SEQ_T300
+		LEFT OUTER JOIN TDPP201 C 
+		ON B.FORM_SEQ = C.FORM_SEQ
+		LEFT OUTER JOIN TEMP_QICS D 
+		ON A.SEQ_TEMP = D.SEQ_TEMP
+		WHERE A.STATUS_CODE IN ('R','P','S')
+		AND A.WORK_DATE = :WORK_DATE
+		AND A.IN_LINE =:IN_LINE
+		ORDER BY STATUS_ORDER, A.SEQ_Q100 ASC
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>		
+		<query id="getPenWorkInfo" mappingStyle="none">
+			<statement>
+				<![CDATA[
+					SELECT 
+							A.SEQ_Q100,
+							A.IN_FACT,
+							A.IN_ORDER,
+							A.IN_LINE,
+							A.IN_TYPE,
+							A.POC_NO,
+							A.POC_NO01,
+							A.POC_NO02,
+							A.POC_NO03,
+							A.POC_NO04,
+							A.WORK_DATE,
+							A.MRG_SEQ,
+							A.MRG_DISCRETE_NUMBER,
+							A.MRG_LINE_CODE,
+							B.STEEL_TYPE_DESC AS MRG_STEEL_TYPE,
+							A.MRG_R_SUPPLIER,
+							A.MRG_WIP_ENTITY_NAME,
+							ISNULL(B.DEMAND_THICK_DESC,ISNULL(B.RAW_THICK,B.WIP_THICK)) AS MRG_R_SUPPLY_THICKNESS,
+							ISNULL(B.ORDER_WIDTH,ISNULL(B.RAW_WIDTH,B.WIP_WIDTH)) AS MRG_R_WIDTH,
+							A.PARTIAL_WEIGHT,
+							A.TARGET_THICKNESS,
+							A.AIM_THICKNESS,
+							A.AIM_TOL,
+							A.JOB_DESCRIPTION,
+							A.SEQ_T300,
+							A.STATUS_CODE,
+						   CASE WHEN A.STATUS_CODE ='R' THEN '출력대기'
+						 		     WHEN A.STATUS_CODE = 'P'  THEN '검사대기'
+						  		     WHEN A.STATUS_CODE = 'S'  THEN '검사중'
+						             WHEN A.STATUS_CODE = 'C' THEN 'ERP 전송완료'
+						             ELSE ''
+						    END AS STATUS_NM,
+							A.CHKIP,
+							A.CHKDATE,
+							A.UPTIP,
+							A.UPTDATE,
+							A.SEQ_TEMP,
+							A.ME_INFO,
+							B.SALES_ORDER_NO,
+							B.SALES_ORDER_ROW_NO,
+							B.SALES_ORDER_NO_SEQ,
+							B.ORD_COMMENT,
+							B.END_USER_CODE,
+							B.END_USER_DESC,
+							(SELECT FORM_CODE FROM TSYS100 WHERE CODE_GUBUN = 'UFS_RESOURCE' AND USED_YN  = 'Y' AND CODE = A.IN_LINE) AS FORM_CODE,
+							B.DELV_DESC,
+							B.CUSTOMER_DESC
+					FROM QICS100 A LEFT JOIN TEMP_QICS B ON (A.SEQ_TEMP = B.SEQ_TEMP) 
+					WHERE A.SEQ_Q100=:SEQ_Q100
+ 
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="getPenWorkFinalInfo" mappingStyle="none">
+			<statement>
+				<![CDATA[
+					SELECT 
+							A.SEQ_Q100,
+							A.IN_FACT,
+							A.IN_ORDER,
+							A.IN_LINE,
+							A.IN_TYPE,
+							A.POC_NO,
+							A.POC_NO01,
+							A.POC_NO02,
+							A.POC_NO03,
+							A.POC_NO04,
+							A.WORK_DATE,
+							A.MRG_SEQ,
+							A.MRG_DISCRETE_NUMBER,
+							A.MRG_LINE_CODE,
+							B.STEEL_TYPE_DESC AS MRG_STEEL_TYPE,
+							A.MRG_R_SUPPLIER,							
+							A.MRG_WIP_ENTITY_NAME,
+							ISNULL(B.DEMAND_THICK_DESC,ISNULL(B.RAW_THICK,B.WIP_THICK)) AS MRG_R_SUPPLY_THICKNESS,
+							ISNULL(B.ORDER_WIDTH,ISNULL(B.RAW_WIDTH,B.WIP_WIDTH)) AS MRG_R_WIDTH,
+							A.PARTIAL_WEIGHT,
+							A.TARGET_THICKNESS,
+							A.AIM_THICKNESS,
+							A.AIM_TOL,
+							A.JOB_DESCRIPTION,
+							A.SEQ_T300,
+							A.STATUS_CODE,
+						   CASE WHEN A.STATUS_CODE ='R' THEN '출력대기'
+						 		     WHEN A.STATUS_CODE = 'P'  THEN '검사대기'
+						  		     WHEN A.STATUS_CODE = 'S'  THEN '검사중'
+						             WHEN A.STATUS_CODE = 'C' THEN 'ERP 전송완료'
+						             ELSE ''
+						    END AS STATUS_NM,
+							A.CHKIP,
+							A.CHKDATE,
+							A.UPTIP,
+							A.UPTDATE
+					FROM QICS100 A  
+					WHERE A.SEQ_Q100=:PRE_SEQ_Q100
+ 
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="getSalesEndUser" mappingStyle="none">
+			<statement>
+				<![CDATA[
+					SELECT SALES_ORDER_NO , DELV_DESC, SALES_ORDER_NO_SEQ, ORD_COMMENT ,CUSTOMER_DESC, ORD_COMMENT, CUSTOMER_CODE
+  					  FROM TEMP_QICS where seq_temp in  (select seq_temp from dbo.fn_SeqTempTable(:SEQ_TEMP))
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="getPadInfo" mappingStyle="none">
+			<statement>
+				<![CDATA[
+					SELECT * FROM TDPP205
+					WHERE FORM_SEQ = (SELECT MAX(FORM_SEQ) FROM TDPP201 WHERE FORM_CODE=:FORM_CODE)
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="getPadDynamic"  mappingStyle="none">
+			<statement>
+				<![CDATA[
+					SELECT * FROM TDPP205
+					WHERE FORM_SEQ = (SELECT MAX(FORM_SEQ) FROM TDPP201 WHERE FORM_CODE=:FORM_CODE)
+						AND FIELD_DYNAMIC='true'
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="getPadMaster"  mappingStyle="none">
+			<statement>
+				<![CDATA[
+					SELECT * FROM TDPP201
+					WHERE FORM_SEQ = (SELECT MAX(FORM_SEQ) FROM TDPP201 WHERE FORM_CODE=:FORM_CODE)
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="getSeqT300"  mappingStyle="none">
+			<statement>
+				{? = call dbo.usp_SeqT300 (?) }
+			</statement>
+			<param type="VARCHAR" binding="OUT" name="SEQ_T300" />
+            <param type="VARCHAR" binding="IN" name="inVal" />
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="getSeqQ100" mappingStyle="none">
+			<statement>
+					{? = call dbo.usp_SeqQ100 (?) }
+			</statement>
+			<param type="VARCHAR" binding="OUT" name="SEQ_Q100" />
+            <param type="VARCHAR" binding="IN" name="inVal" />
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="getSeqTemp" mappingStyle="none">
+			<statement>
+					{? = call dbo.usp_SeqTemp (?) }
+			</statement>
+			<param type="VARCHAR" binding="OUT" name="SEQ_TEMP" />
+            <param type="VARCHAR" binding="IN" name="inVal" />
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="getBgImage"  mappingStyle="none">
+			<statement>
+				<![CDATA[
+					SELECT * FROM TDPP203
+					WHERE FORM_SEQ = (SELECT MAX(FORM_SEQ) FROM TDPP201 WHERE FORM_CODE=:FORM_CODE)
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="getFieldInfo"  mappingStyle="none">
+			<statement>
+				<![CDATA[
+					SELECT 
+						FORM_SEQ,
+						PAGE_ORDER,
+						FIELD_NAME,
+						TAB_INDEX,
+						ERP_CNAME,
+						ERP_CTYPE,
+						ERP_CSIZE,
+						(CASE WHEN ISNULL(ERP_SEND_YN, '') = '' THEN '' ELSE ERP_SEND_YN END) AS ERP_SEND_YN,
+						FIELD_TOP,
+						FIELD_LEFT,
+						FIELD_WIDTH,
+						FIELD_HEIGHT,
+						FIELD_CONTENTTYPE,
+						FIELD_DATATYPE,
+						FIELD_INPUTUNITTYPE,
+						FIELD_GROUPMEMBER,
+						FIELD_GROUPTYPE,
+						FIELD_DYNAMIC,
+						FIELD_STYLE,
+						FIELD_FIELDVALUE,
+						ATTRIBUTE1
+					FROM TDPP205
+					WHERE FORM_SEQ = (SELECT MAX(FORM_SEQ) FROM TDPP201 WHERE FORM_CODE=:FORM_CODE)
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="setQICS200"  mappingStyle="none">
+			<statement>
+				<![CDATA[
+					INSERT INTO QICS200(
+						SEQ_T300,
+						SEQ_Q100,
+						WIP_ENTITY_NAME,
+						R_SUPPLY_THICKNESS,
+						AIM_THICKNESS_1,
+						AIM_THICKNESS,
+						TARGET_THICKNESS,
+						LAST_WIDTH,
+						R_SUPPLIER,
+						STEEL_TYPE,
+						HEAT_NO,
+						SURFACE,
+						CUSTUMER,
+						ORDER_NUMBER,
+						LINE_NUMBER,
+						RELEATED_SIZE,
+						USE_NAME,
+						PAPER,
+						CG_PASSCNT,
+						THICKNESS_MAX,
+						THICKNESS_MIN,
+						CC_DEFINE_NAME,
+						CHKIP,
+						CHKDATE
+					) VALUES (
+						:SEQ_T300,
+						:SEQ_Q100,
+						:WIP_ENTITY_NAME,
+						:R_SUPPLY_THICKNESS,
+						:AIM_THICKNESS_1,
+						:AIM_THICKNESS,
+						:TARGET_THICKNESS,
+						:LAST_WIDTH,
+						:R_SUPPLIER,
+						:STEEL_TYPE,
+						:HEAT_NO,
+						:SURFACE,
+						:CUSTUMER,
+						:ORDER_NUMBER,
+						:LINE_NUMBER,
+						:RELEATED_SIZE,
+						:USE_NAME,
+						:PAPER,
+						:CG_PASSCNT,
+						:THICKNESS_MAX,
+						:THICKNESS_MIN,
+						:CC_DEFINE_NAME,
+						:authIP,
+						getdate()
+					)
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="setQICS203"  mappingStyle="none">
+			<statement>
+				<![CDATA[
+					INSERT INTO QICS203(
+						SEQ_T300,
+						SEQ_Q100,
+						FORM_SEQ,
+						PAGE_ORDER,
+						BG_NAME,
+						BG_PATH,
+						HEIGHT,
+						WIDTH,
+						REG_DATE
+						)
+						SELECT 
+							S.SEQ_T300,
+							S.SEQ_Q100,
+							S.FORM_SEQ,
+							S.PAGE_ORDER,
+							S.BG_NAME,
+							S.BG_PATH,
+							S.HEIGHT,
+							S.WIDTH,
+						    getdate() AS REG_DATE
+						FROM (
+						SELECT
+							NULL AS	SEQ_T300,
+							NULL AS	SEQ_Q100,
+							NULL AS	FORM_SEQ,
+							NULL AS	PAGE_ORDER,
+							NULL AS	BG_NAME,
+							NULL AS	BG_PATH,
+							NULL AS	HEIGHT,
+							NULL AS	WIDTH
+#foreach( $rm in $insertRows )
+						UNION ALL
+						SELECT
+						LTRIM('$rm.SEQ_T300') AS SEQ_T300,
+						LTRIM('$rm.SEQ_Q100') AS SEQ_Q100,
+						LTRIM('$rm.FORM_SEQ') AS FORM_SEQ,
+						LTRIM('$rm.PAGE_ORDER') AS PAGE_ORDER,
+						LTRIM('$rm.BG_NAME') AS BG_NAME,
+						LTRIM('$rm.BG_PATH') AS BG_PATH,
+						LTRIM('$rm.HEIGHT') AS HEIGHT,
+						LTRIM('$rm.WIDTH') AS WIDTH
+#end
+						)S
+						WHERE S.SEQ_T300 IS NOT NULL
+
+
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="setQICS205"  mappingStyle="none">
+			<statement>
+				<![CDATA[
+					INSERT INTO QICS205(
+						SEQ_T300,
+						SEQ_Q100,
+						FORM_SEQ,
+						PAGE_ORDER,
+						FIELD_POD,
+						FIELD_NAME,
+						TAB_INDEX,
+						ERP_CNAME,
+						ERP_CTYPE,
+						ERP_CSIZE,
+						ERP_SEND_YN,
+						FIELD_TOP,
+						FIELD_LEFT,
+						FIELD_WIDTH,
+						FIELD_HEIGHT,
+						FIELD_CONTENTTYPE,
+						FIELD_DATATYPE,
+						FIELD_INPUTUNITTYPE,
+						FIELD_GROUPMEMBER,
+						FIELD_GROUPTYPE,
+						FIELD_DYNAMIC,
+						FIELD_STYLE,
+						FIELD_FIELDVALUE,
+						ATTRIBUTE1,
+					    REG_DATE
+						)
+						SELECT 
+							S.SEQ_T300,
+							S.SEQ_Q100,
+							S.FORM_SEQ,
+							S.PAGE_ORDER,
+							S.FIELD_POD,
+							S.FIELD_NAME,
+							S.TAB_INDEX,
+							S.ERP_CNAME,
+							S.ERP_CTYPE,
+							S.ERP_CSIZE,
+							S.ERP_SEND_YN,
+							S.FIELD_TOP,
+							S.FIELD_LEFT,
+							S.FIELD_WIDTH,
+							S.FIELD_HEIGHT,
+							S.FIELD_CONTENTTYPE,
+							S.FIELD_DATATYPE,
+							S.FIELD_INPUTUNITTYPE,
+							S.FIELD_GROUPMEMBER,
+							S.FIELD_GROUPTYPE,
+							S.FIELD_DYNAMIC,
+							S.FIELD_STYLE,
+							S.FIELD_FIELDVALUE,
+							S.ATTRIBUTE1,
+						    getdate() AS REG_DATE
+						FROM (
+							SELECT
+								NULL AS	SEQ_T300,
+								NULL AS	SEQ_Q100,
+								NULL AS	FORM_SEQ,
+								NULL AS	PAGE_ORDER,
+								NULL AS	FIELD_POD,
+								NULL AS	FIELD_NAME,
+								NULL AS	TAB_INDEX,
+								NULL AS	ERP_CNAME,
+								NULL AS	ERP_CTYPE,
+								NULL AS	ERP_CSIZE,
+								NULL AS	ERP_SEND_YN,
+								NULL AS	FIELD_TOP,
+								NULL AS	FIELD_LEFT,
+								NULL AS	FIELD_WIDTH,
+								NULL AS	FIELD_HEIGHT,
+								NULL AS	FIELD_CONTENTTYPE,
+								NULL AS	FIELD_DATATYPE,
+								NULL AS	FIELD_INPUTUNITTYPE,
+								NULL AS	FIELD_GROUPMEMBER,
+								NULL AS	FIELD_GROUPTYPE,
+								NULL AS	FIELD_DYNAMIC,
+								NULL AS	FIELD_STYLE,
+								NULL AS	FIELD_FIELDVALUE,
+								NULL AS	ATTRIBUTE1
+#foreach( $rm in $insertRows )
+						UNION ALL
+						SELECT
+						LTRIM('$rm.SEQ_T300') AS SEQ_T300,
+						LTRIM('$rm.SEQ_Q100') AS SEQ_Q100,
+						LTRIM('$rm.FORM_SEQ') AS FORM_SEQ,
+						LTRIM('$rm.PAGE_ORDER')  AS PAGE_ORDER,
+					#if($rm.FIELD_POD && !$rm.FIELD_POD.equals("")  )
+						LTRIM('$rm.FIELD_POD')  AS	FIELD_POD,
+					#else
+							 null AS FIELD_POD,
+					#end	
+						LTRIM('$rm.FIELD_NAME')  AS	FIELD_NAME,
+						LTRIM('$rm.TAB_INDEX')  AS	TAB_INDEX,
+						LTRIM('$rm.ERP_CNAME')  AS	ERP_CNAME,
+						LTRIM('$rm.ERP_CTYPE')  AS	ERP_CTYPE,
+						LTRIM('$rm.ERP_CSIZE')  AS	ERP_CSIZE,
+						LTRIM('$rm.ERP_SEND_YN')  AS	ERP_SEND_YN,
+						LTRIM('$rm.FIELD_TOP')  AS	FIELD_TOP,
+						LTRIM('$rm.FIELD_LEFT')  AS	FIELD_LEFT,
+						LTRIM('$rm.FIELD_WIDTH')  AS	FIELD_WIDTH,
+						LTRIM('$rm.FIELD_HEIGHT')  AS	FIELD_HEIGHT,
+						LTRIM('$rm.FIELD_CONTENTTYPE')  AS	FIELD_CONTENTTYPE,
+						LTRIM('$rm.FIELD_DATATYPE')  AS	FIELD_DATATYPE,
+						LTRIM('$rm.FIELD_INPUTUNITTYPE')  AS	FIELD_INPUTUNITTYPE,
+						LTRIM('$rm.FIELD_GROUPMEMBER')  AS	FIELD_GROUPMEMBER,
+						LTRIM('$rm.FIELD_GROUPTYPE')  AS	FIELD_GROUPTYPE,
+						LTRIM('$rm.FIELD_DYNAMIC')  AS	FIELD_DYNAMIC,
+						LTRIM('$rm.FIELD_STYLE')  AS	FIELD_STYLE,
+						LTRIM('$rm.FIELD_FIELDVALUE')  AS	FIELD_FIELDVALUE,
+						LTRIM('$rm.ATTRIBUTE1')  AS	ATTRIBUTE1
+#end
+						)S
+						WHERE S.SEQ_T300 IS NOT NULL
+
+
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="setTDPP300"  mappingStyle="none">
+			<statement>
+				<![CDATA[
+					INSERT INTO TDPP300(
+						SEQ_T300,
+						SEQ_Q100,
+						IN_LINE,
+						POC_NO,
+						POC_NO01,
+						POC_NO02,
+						POC_NO03,
+						WORK_DATE,
+						WORK_COUNT,
+						FORM_SEQ,
+						PRINT_PAGE,
+						FORM_NAME,
+						FORM_TYPE,
+						WEB_DATA_YN,
+						DATA_YN,
+						PS_URL,
+						CHKIP,
+						CHKDATE
+					) VALUES (
+						:SEQ_T300,
+						:SEQ_Q100,
+						:IN_LINE,
+						:POC_NO,
+						:POC_NO01,
+						:POC_NO02,
+						:POC_NO03,
+					--	 REPLACE( :WORK_DATE, '/', '') ,
+					    :WORK_DATE,
+					    #if( $FORM_TYPE.equals("R") )
+					    0,
+					    #else
+					    (SELECT COUNT(*)+1 FROM TDPP300 WHERE POC_NO =:POC_NO  AND IN_LINE = :IN_LINE),
+					    #end
+						:FORM_SEQ,
+						:PRINT_PAGE,
+						:FORM_NAME,
+						:FORM_TYPE,
+						:WEB_DATA_YN,
+						:DATA_YN,
+						:PS_URL,
+						:authIP,
+						getdate()
+					)
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="setQICSPod213"  mappingStyle="none">
+			<statement>
+				<![CDATA[
+					INSERT INTO QICS213(
+						SEQ_T300,
+						SEQ_Q100,
+						FORM_SEQ,
+						PAGE_ORDER,
+						FIELD_NAME,
+						USER_INPUT_VALUE,
+						CHKIP,
+						CHKDATE
+						)
+						SELECT 
+							S.SEQ_T300,
+							S.SEQ_Q100,
+							S.FORM_SEQ,
+							S.PAGE_ORDER,
+							S.FIELD_NAME,
+							S.USER_INPUT_VALUE,
+							:authIP AS CHKIP,
+							getdate() AS CHKDATE
+						FROM (
+							SELECT
+								NULL AS	SEQ_T300,
+								NULL AS	SEQ_Q100,
+								NULL AS	FORM_SEQ,
+								NULL AS	PAGE_ORDER,
+								NULL AS	FIELD_NAME,
+								NULL AS	USER_INPUT_VALUE
+#foreach( $rm in $insertRows )
+						UNION ALL
+						SELECT
+						LTRIM('$rm.SEQ_T300') AS SEQ_T300,
+						LTRIM('$rm.SEQ_Q100') AS SEQ_Q100,
+						LTRIM('$rm.FORM_SEQ') AS FORM_SEQ,
+						LTRIM('$rm.PAGE_ORDER')  AS PAGE_ORDER,
+						LTRIM('$rm.FIELD_NAME')  AS	FIELD_NAME,
+			    #if($rm.USER_INPUT_VALUE && !$rm.USER_INPUT_VALUE.equals("")  )
+						LTRIM('$rm.USER_INPUT_VALUE')  AS	USER_INPUT_VALUE
+				#else
+						 null
+				#end  
+#end
+						)S
+						WHERE S.SEQ_T300 IS NOT NULL
+
+
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>			
+		<query id="setQICSWeb213"  mappingStyle="none">
+			<statement>
+				<![CDATA[
+					INSERT INTO QICS213(
+						SEQ_T300,
+						SEQ_Q100,
+						FORM_SEQ,
+						PAGE_ORDER,
+						FIELD_NAME,
+						USER_INPUT_VALUE,
+						CHKIP,
+						CHKDATE
+						)
+						SELECT 
+							S.SEQ_T300,
+							S.SEQ_Q100,
+							S.FORM_SEQ,
+							S.PAGE_ORDER,
+							S.FIELD_NAME,
+							S.USER_INPUT_VALUE,
+							:authIP AS CHKIP,
+							getdate() AS CHKDATE
+						FROM (
+							SELECT
+								NULL AS	SEQ_T300,
+								NULL AS	SEQ_Q100,
+								NULL AS	FORM_SEQ,
+								NULL AS	PAGE_ORDER,
+								NULL AS	FIELD_NAME,
+								NULL AS	USER_INPUT_VALUE
+#foreach( $rm in $insertRows )
+						UNION ALL
+						SELECT
+						LTRIM('$rm.SEQ_T300') AS SEQ_T300,
+						LTRIM('$rm.SEQ_Q100') AS SEQ_Q100,
+						LTRIM('$rm.FORM_SEQ') AS FORM_SEQ,
+						LTRIM('$rm.PAGE_ORDER')  AS PAGE_ORDER,
+						LTRIM('$rm.FIELD_NAME')  AS	FIELD_NAME,
+					#if($rm.USER_INPUT_VALUE && !$rm.USER_INPUT_VALUE.equals("")  )
+							LTRIM('$rm.USER_INPUT_VALUE')  AS	USER_INPUT_VALUE
+					#else
+							 null
+					#end  
+						
+#end
+						)S
+						WHERE S.SEQ_T300 IS NOT NULL
+
+
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>		
+		<query id="setQICS000"  mappingStyle="none">
+			<statement>
+				<![CDATA[
+					INSERT INTO QICS000(
+						SEQ_T300,
+						SEQ_Q100,
+						WORK_DATE,
+						POC_NO,
+						WORK_COUNT,
+						FORM_SEQ,
+						FORM_ID,
+						FORM_CODE,
+						FORM_NAME
+					) VALUES (
+						:SEQ_T300,
+						:SEQ_Q100,
+						:WORK_DATE,
+						:POC_NO,
+						:WORK_COUNT,
+						:FORM_SEQ,
+						:FORM_ID,
+						:FORM_CODE,
+						:FORM_NAME
+					)
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="setFinalQICS100"  mappingStyle="none">
+			<statement>
+				<![CDATA[
+					 UPDATE QICS100 SET SEQ_T300=:SEQ_T300
+					 , STATUS_CODE=:STATUS_CODE
+					 WHERE SEQ_Q100 = :SEQ_Q100
+					
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="setPrintM"  mappingStyle="none">
+			<statement>
+				<![CDATA[
+					 UPDATE QICS100 SET STAMP_INFO = :CHECK_DATA
+					 , APPR_INFO = :C_APP
+					 , ME_INFO = :ME
+					 , APPR_DEPT = :C_FRM_DPT
+					 WHERE SEQ_Q100 = :SEQ_Q100
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="setPrintF">
+			<statement>
+				<![CDATA[
+					INSERT INTO QICS100(
+					    SEQ_Q100,
+						IN_FACT,
+						IN_ORDER,
+						IN_LINE,
+						IN_TYPE,
+						POC_NO,
+						POC_NO01,
+						POC_NO02,
+						MRG_SEQ,
+						MRG_DISCRETE_NUMBER,
+						MRG_LINE_CODE,
+						MRG_STEEL_TYPE,
+						MRG_R_SUPPLIER,
+						MRG_WIP_ENTITY_NAME,
+						MRG_R_SUPPLY_THICKNESS,
+						MRG_R_WIDTH,
+						PARTIAL_WEIGHT,
+						TARGET_THICKNESS,
+						AIM_THICKNESS,
+						AIM_TOL,
+						JOB_DESCRIPTION,
+						WORK_DATE,
+						STATUS_CODE,
+						CHKIP,
+						CHKDATE,
+						SEQ_TEMP
+						) VALUES (
+							:SEQ_Q100,
+							:IN_FACT,
+							:IN_ORDER,
+							:IN_LINE,
+							:IN_TYPE,
+							CONCAT(SUBSTRING(:POC_NO,1,CHARINDEX('-',:POC_NO)),:POC_NO02),
+							:POC_NO01,
+							:POC_NO02,
+							:MRG_SEQ,
+							:MRG_DISCRETE_NUMBER,
+							:MRG_LINE_CODE,
+							:MRG_STEEL_TYPE,
+							:MRG_R_SUPPLIER,
+							:MRG_WIP_ENTITY_NAME,
+							:MRG_R_SUPPLY_THICKNESS,
+							:MRG_R_WIDTH,
+							:PARTIAL_WEIGHT,
+							:TARGET_THICKNESS,
+							:AIM_THICKNESS,
+							:AIM_TOL,
+							:JOB_DESCRIPTION,
+							:WORK_DATE,
+							'R',
+							:authIP,
+							getdate(),
+							:SEQ_TEMP
+						)
+
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="setPrintF2">
+			<statement>
+				<![CDATA[
+					INSERT INTO TEMP_QICS(
+					      POC_NO
+						, FACTORY_CODE
+						, ORDER_NO
+						, LINE_CODE
+						, OPER_CODE
+						, OPER_SEQ
+						, ORD_STATUS
+						, ORD_STATUS_DESC
+						, ORDER_START_TIME
+						, ORDER_END_TIME
+						, FLOW_CODE
+						, MAT_CODE
+						, MAT_DESC
+						, CUSTOMER_CODE
+						, CUSTOMER_DESC
+						, DELV_CODE
+						, DELV_DESC
+						, END_USER_CODE
+						, END_USER_DESC
+						, STEEL_TYPE
+						, STEEL_TYPE_DESC
+						, STEEL_GROUP
+						, SALES_ORDER_ROW_NO
+						, SALES_ORDER_NO
+						, SALES_ORDER_NO_SEQ
+						, PROD_ORDER_TYPE
+						, DEMAND_THICK
+						, DEMAND_THICK_DESC
+						, DEMAND_WIDTH
+						, ORDER_WIDTH
+						, ORD_QTY
+						, SURFACE
+						, REMARK
+						, PREV_OPER_CODE
+						, NEXT_OPER_CODE
+						, HEAT_NO
+						, PASS_CNT
+						, RAW_VENDOR_CODE
+						, RAW_VENDOR_DESC
+						, MTI_FLAG
+						, FTI_FLAG
+						, ORD_COMMENT
+						, USAGE_CODE
+						, USAGE_DESC
+						, ILLUMINANCE_CUT_OFF
+						, THICK_ALLOWANCE_MM_MIN
+						, THICK_ALLOWANCE_MM_MAX
+						, WIDTH_ALLOWANCE_MM_MIN
+						, WIDTH_ALLOWANCE_MM_MAX
+						, MILLING_LINE
+						, MILLING_WORK_GROUP
+						, RAW_BET_PAPER
+						, FINAL_AIM
+						, TRD_AIM
+						, SND_AIM
+						, FST_AIM
+						, STANDARD_TYPE
+						, PASS_GRADE
+						, GOCHING_G
+						, AIM_G
+						, SEQ_TEMP
+						, WIP_WIDTH
+						, WIP_THICK
+						, WIP_QTY
+						, RAW_WIDTH
+						, RAW_THICK
+						, RAW_QTY
+						) SELECT
+						  CONCAT(SUBSTRING(POC_NO,1,CHARINDEX('-',POC_NO)),:POC_NO02)
+						, FACTORY_CODE
+						, :ORDER_NUMBER --ORDER_NO
+						, LINE_CODE
+						, OPER_CODE
+						, OPER_SEQ
+						, ORD_STATUS
+						, ORD_STATUS_DESC
+						, ORDER_START_TIME
+						, ORDER_END_TIME
+						, FLOW_CODE
+						, MAT_CODE
+						, MAT_DESC
+						, CUSTOMER_CODE
+						, CUSTOMER_DESC
+						, DELV_CODE
+						, DELV_DESC
+						, END_USER_CODE
+						, END_USER_DESC
+						, STEEL_TYPE
+						, STEEL_TYPE_DESC
+						, STEEL_GROUP
+						, SALES_ORDER_ROW_NO
+						, SALES_ORDER_NO
+						, SALES_ORDER_NO_SEQ
+						, PROD_ORDER_TYPE
+						, DEMAND_THICK
+						, DEMAND_THICK_DESC
+						, DEMAND_WIDTH
+						, ORDER_WIDTH
+						, ORD_QTY
+						, SURFACE
+						, REMARK
+						, PREV_OPER_CODE
+						, NEXT_OPER_CODE
+						, HEAT_NO
+						, PASS_CNT
+						, RAW_VENDOR_CODE
+						, RAW_VENDOR_DESC
+						, MTI_FLAG
+						, FTI_FLAG
+						, ORD_COMMENT
+						, USAGE_CODE
+						, USAGE_DESC
+						, ILLUMINANCE_CUT_OFF
+						, THICK_ALLOWANCE_MM_MIN
+						, THICK_ALLOWANCE_MM_MAX
+						, WIDTH_ALLOWANCE_MM_MIN
+						, WIDTH_ALLOWANCE_MM_MAX
+						, MILLING_LINE
+						, MILLING_WORK_GROUP
+						, RAW_BET_PAPER
+						, FINAL_AIM
+						, TRD_AIM
+						, SND_AIM
+						, FST_AIM
+						, STANDARD_TYPE
+						, PASS_GRADE
+						, GOCHING_G
+						, AIM_G
+						, :SEQ_TEMP
+						, WIP_WIDTH
+						, WIP_THICK
+						, WIP_QTY
+						, RAW_WIDTH
+						, RAW_THICK
+						, RAW_QTY
+						FROM TEMP_QICS WHERE SEQ_TEMP = (SELECT SEQ_TEMP FROM QICS100 WHERE SEQ_Q100 = :PRE_SEQ_Q100)
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="setTDPP207"  mappingStyle="none">
+			<statement>
+				<![CDATA[
+					INSERT INTO TDPP207(
+						SEQ_T300,
+						FORM_ID,
+						XML_FILE,
+						PRINT_CODE,
+						REG_DATE
+					) VALUES (
+						:SEQ_T300,
+						:FORM_ID,
+						:XML_FILE,
+						:PRINT_CODE,
+						getdate()  
+					)
+					
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="setTDPP211"  mappingStyle="none">
+			<statement>
+				<![CDATA[
+					INSERT INTO TDPP211(
+						SEQ_T300,
+						P_ORDER,
+						P_BG,
+						P_BG_PATH,
+						HEIGHT,
+						WIDTH,
+						REG_DATE
+						)
+						SELECT 
+							S.SEQ_T300,
+							S.P_ORDER,
+							S.P_BG,
+							S.P_BG_PATH,
+							S.HEIGHT,
+							S.WIDTH,
+						    getdate() AS REG_DATE
+						FROM (
+						SELECT
+							NULL AS	SEQ_T300,
+							NULL AS	P_ORDER,
+							NULL AS	P_BG,
+							NULL AS P_BG_PATH,
+							NULL AS	HEIGHT,
+							NULL AS	WIDTH
+#foreach( $rm in $insertRows )
+						UNION ALL
+						SELECT
+						LTRIM('$rm.SEQ_T300') AS SEQ_T300,
+						LTRIM('$rm.PAGE_ORDER') AS P_ORDER,
+						LTRIM('$rm.BG_NAME') AS P_BG,
+						LTRIM('$rm.BG_PATH') AS P_BG_PATH,
+						LTRIM('$rm.HEIGHT') AS HEIGHT,
+						LTRIM('$rm.WIDTH') AS WIDTH
+#end
+						)S
+						WHERE S.SEQ_T300 IS NOT NULL
+
+
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="setTDPP213"  mappingStyle="none">
+			<statement>
+				<![CDATA[
+					INSERT INTO TDPP213(
+						SEQ_T300,
+						P_ORDER,
+						FIELD_NAME,
+						USER_INPUT_VALUE,
+						REG_DATE
+						)
+						SELECT 
+							S.SEQ_T300,
+							S.P_ORDER,
+							S.FIELD_NAME,
+							S.USER_INPUT_VALUE AS USER_INPUT_VALUE,
+							getdate() AS CHKDATE
+						FROM (
+							SELECT
+								NULL AS	SEQ_T300,
+								NULL AS	P_ORDER,
+								NULL AS	FIELD_NAME,
+								NULL AS	USER_INPUT_VALUE
+#foreach( $rm in $insertRows )
+						UNION ALL
+						SELECT
+						LTRIM('$rm.SEQ_T300') AS SEQ_T300,
+						LTRIM('$rm.PAGE_ORDER')  AS P_ORDER,
+						LTRIM('$rm.FIELD_NAME')  AS	FIELD_NAME,
+					#if($rm.USER_INPUT_VALUE && !$rm.USER_INPUT_VALUE.equals("")  )
+							LTRIM('$rm.USER_INPUT_VALUE')  AS	USER_INPUT_VALUE
+					#else
+							 null
+					#end  
+#end
+						)S
+						WHERE S.SEQ_T300 IS NOT NULL
+
+
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="setQICS100">
+			<statement>
+				<![CDATA[
+					INSERT INTO QICS100(
+					    SEQ_Q100,
+						IN_FACT,
+						IN_ORDER,
+						IN_LINE,
+						IN_TYPE,
+						POC_NO,
+						POC_NO01,
+						POC_NO02,
+						MRG_SEQ,
+						MRG_DISCRETE_NUMBER,
+						MRG_LINE_CODE,
+						MRG_STEEL_TYPE,
+						MRG_R_SUPPLIER,
+						MRG_WIP_ENTITY_NAME,
+						MRG_R_SUPPLY_THICKNESS,
+						MRG_R_WIDTH,
+						PARTIAL_WEIGHT,
+						TARGET_THICKNESS,
+						AIM_THICKNESS,
+						AIM_TOL,
+						JOB_DESCRIPTION,
+						WORK_DATE,
+						STATUS_CODE,
+						CHKIP,
+						CHKDATE
+						) VALUES (
+							:SEQ_Q100,
+							:IN_FACT,
+							:IN_ORDER,
+							:IN_LINE,
+							:IN_TYPE,
+							:POC_NO,
+							:POC_NO01,
+							:POC_NO02,
+							:MRG_SEQ,
+							:MRG_DISCRETE_NUMBER,
+							:MRG_LINE_CODE,
+							:MRG_STEEL_TYPE,
+							:MRG_R_SUPPLIER,
+							:MRG_WIP_ENTITY_NAME,
+							:MRG_R_SUPPLY_THICKNESS,
+							:MRG_R_WIDTH,
+							:PARTIAL_WEIGHT,
+							:TARGET_THICKNESS,
+							:AIM_THICKNESS,
+							:AIM_TOL,
+							:JOB_DESCRIPTION,
+							:WORK_DATE,
+							:STATUS_CODE,
+							:authIP,
+							getdate()
+						)
+
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="delFinalQICS100">
+			<statement>
+				<![CDATA[
+					DELETE FROM QICS100
+					WHERE SEQ_Q100=:PRE_SEQ_Q100
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="setTDPP400" mappingStyle="none">
+			<statement>
+				<![CDATA[
+					INSERT INTO TDPP400(
+						SEQ_T300,
+						SEQ_Q100,
+						YY,
+						MM,
+						IN_LINE,
+						SUB_NO,
+						IDX,
+						FULL_NO,
+						POC_NO,
+						CHKIP
+					) VALUES (
+						:SEQ_T300,
+						:SEQ_Q100,
+						:YY,
+						:MM,
+						:IN_LINE,
+						:SUB_NO,
+						:IDX,
+						:FULL_NO,
+						:POC_NO,
+						:authIP 
+					)
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>									
+	</queries>
+</queryservice>
+

@@ -1,0 +1,2127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<queryservice xmlns="http://www.anyframejava.org/schema/query/mapping"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.anyframejava.org/schema/query/mapping http://www.anyframejava.org/schema/query/mapping/anyframe-query-mapping-1.0.xsd ">
+	<queries>
+		<query id="savePenWork" mappingStyle="none">
+			<statement>
+				<![CDATA[
+					MERGE INTO QICS213 T
+					USING	(
+							SELECT	  A.SEQ_T300
+									, A.SEQ_Q100
+									, A.FORM_SEQ
+									, A.PAGE_ORDER
+									, A.FIELD_NAME
+									, A.USER_LAST_VALUE
+							FROM	(
+									SELECT	  NULL	AS SEQ_T300       
+											, NULL	AS SEQ_Q100       
+											, NULL	AS FORM_SEQ   
+											, NULL	AS PAGE_ORDER     
+											, NULL	AS FIELD_NAME          
+											, NULL	AS USER_LAST_VALUE     
+#foreach( $rm in $mergeRows )
+							UNION ALL
+									SELECT
+											  LTRIM( '$rm.SEQ_T300' )	AS SEQ_T300      
+											, LTRIM( '$rm.SEQ_Q100' )	AS SEQ_Q100      
+											, LTRIM( '$rm.FORM_SEQ' )	AS FORM_SEQ  
+											, LTRIM( '$rm.PAGE_ORDER' )	AS PAGE_ORDER    
+											, LTRIM( '$rm.FIELD_NAME' )	AS FIELD_NAME     
+											, LTRIM( '$rm.USER_LAST_VALUE' )  AS USER_LAST_VALUE
+						
+#end			
+									) A WHERE SEQ_T300 IS NOT NULL
+							) S
+					ON ( T.SEQ_T300		= S.SEQ_T300 AND T.PAGE_ORDER = S.PAGE_ORDER  AND T.FIELD_NAME = S.FIELD_NAME)
+					WHEN MATCHED THEN
+						UPDATE SET	     
+									  T.USER_LAST_VALUE        	= ( CASE WHEN  S.USER_LAST_VALUE='' THEN  ( CASE WHEN  T.USER_INPUT_VALUE IS NULL THEN NULL  ELSE  S.USER_LAST_VALUE  END )    ELSE  S.USER_LAST_VALUE  END )       
+					WHEN NOT MATCHED THEN
+						INSERT 
+						(
+							  SEQ_T300       
+   							, SEQ_Q100       
+   							, FORM_SEQ   
+   							, PAGE_ORDER     
+   							, FIELD_NAME          
+   							, USER_LAST_VALUE      
+						) 
+						VALUES 
+						(
+ 							  S.SEQ_T300       
+ 							, S.SEQ_Q100       
+ 							, S.FORM_SEQ   
+ 							, S.PAGE_ORDER     
+ 							, S.FIELD_NAME          
+ 							, S.USER_LAST_VALUE      
+						);
+
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="saveChk" mappingStyle="none">
+			<statement>
+				<![CDATA[
+					UPDATE TDPP300 SET  POC_NO = :POC_NO,
+															 POC_NO01 = :C_POC_NO01_POD,
+															 POC_NO02 = :C_POC_NO02_POD,
+															 POC_NO03 = :C_POC_NO03_POD,
+															 WORK_DATE = :C_CHK_DT,
+															 C_CHK_NO = :C_CHK_NO,
+					                                         C_CHKER = :C_CHKER,
+					                                         NG_CODE =:NG_CODE,
+					                                         C_STD01 =:C_STD01,
+					                                         C_STD02 =:C_STD02,
+					                                         C_LEN =:C_LEN,
+					                                         C_PP =:C_PP,
+					                                         C_LV = :C_LV
+					WHERE SEQ_T300=:SEQ_T300
+					AND SEQ_Q100=:SEQ_Q100
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="savePoc" mappingStyle="none">
+			<statement>
+				<![CDATA[
+					UPDATE QICS100 SET  POC_NO = :POC_NO,
+															 POC_NO01 = :C_POC_NO01_POD,
+															 POC_NO02 = :C_POC_NO02_POD,
+															 POC_NO03 = :C_POC_NO03_POD,
+															 WORK_DATE = :C_CHK_DT
+					WHERE SEQ_T300=:SEQ_T300
+					AND SEQ_Q100=:SEQ_Q100
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="BOL_QA_MQC_COIL_MST" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				INSERT INTO BOL_QA_MQC_COIL_MST (    
+				        SEQ_Q100,
+						SEQ_T300,
+						COLLECTION_ID,                 
+						ORGANIZATION_ID,                         
+						POC_NUMBER,                              
+						OPERATION_SEQ_NUM,                       
+						OPERATION_RESOURCE,                      
+						INSPECTION_DATE,                         
+						INSPECTOR,                               
+						STEEL_KIND,                              
+						GRADE_RESULT,                            
+						THICKNESS,                               
+						WIDTH,                                   
+						MFG_WEIGHT,                              
+						TOTAL_LENGTH,                            
+						WIDTH_RESULT,                            
+						TICKNESS_STANDARD,                       
+						TICKNESS_RESULT,                         
+						TICKNESS_SPEC_RANGE,                     
+						GRADE,                                   
+						SURFACE_Q,                               
+						GRADE_SURFACE,                           
+						ROLL_STOP,                               
+						CREATION_DATE,                           
+						CREATED_BY,                              
+						LAST_UPDATE_DATE,                        
+						LAST_UPDATED_BY,                         
+						LAST_UPDATE_LOGIN,                       
+						POP_TRANSACTION_ID,                      
+						OPERATOR,                                
+						TRANSACTION_ID,                          
+						WORK_DATE,                               
+						WORK_TEAM,                               
+						RESOURCE_CODE,                           
+						ITEM_CODE,                               
+						INVENTORY_ITEM_ID,                       
+						ORDER_NUMBER,                            
+						LINE_NUMBER,                             
+						OP_START_DATE,                           
+						ORDER_USAGE_CODE,                        
+						ORDER_USAGE_DESC,                        
+						ORDER_USAGE_END_USER_CODE,               
+						MAIN_NG_CODE,                            
+						NG_QUANTITY,                             
+						HEAT_POC_NUMBER,                         
+						STEEL_CODE,                              
+						ROLL_STOP1,                              
+						ROLL_STOP2, 
+						ROLL_STOP3,
+						ROLL_STOP4,
+						ROLL_STOP5,
+						ROLL_STOP6,
+						ROLL_STOP7,
+						ANN_ST,
+						JUDG
+					) VALUES (
+				        :SEQ_Q100,
+						:SEQ_T300,
+						:COLLECTION_ID,                           
+						:ORGANIZATION_ID,                         
+						:POC_NO,                              
+						:OPERATION_SEQ_NUM,                       
+						:IN_LINE,                      
+						:WORK_DATE,                         
+						:C_CHK_NO,                               
+						:C_STP,                              
+						:C_LV,                            
+						:THICKNESS,                               
+						:WIDTH,                                   
+						:MFG_WEIGHT,                              
+						:C_LEN,                            
+						:C_MSW02,                            
+						:TICKNESS_STANDARD,                       
+						:C_MST02,            
+						#if($TICKNESS_RANGE && !$TICKNESS_RANGE.equals(""))
+								:TICKNESS_RANGE,
+						#else
+								:TICKNESS_SPEC_RANGE, 	
+						#end						                     
+						:C_PP,                                   
+						:C_BEST_VALUE,                               
+						:C_SKIN,                           
+						:C_ROLL_STOP01,                               
+						getdate(),                           
+						'-1',                              
+						getdate(),                        
+						'-1',                         
+						'-1',                       
+						:POP_TRANSACTION_ID,                      
+						:C_CHK_NO,                                
+						:TRANSACTION_ID,                          
+						:WORKDATE,                               
+						:WORK_TEAM,                               
+						:RESOURCE_CODE,                           
+						:ITEM_CODE,                               
+						:INVENTORY_ITEM_ID,                       
+						:ORDER_NUMBER,                            
+						:LINE_NUMBER,                             
+						:OP_START_DATE,                           
+						:ORDER_USAGE_CODE,                        
+						:ORDER_USAGE_DESC,                        
+						:ORDER_USAGE_END_USER_CODE,               
+						:NG_CODE,                            
+						:NG_QUANTITY,                             
+						:HEAT_POC_NUMBER,                         
+						:STEEL_CODE,                              
+						:C_ROLL_STOP02,                              
+						:C_ROLL_STOP03, 
+						:C_ROLL_STOP04,
+						:C_ROLL_STOP05,
+						:C_ROLL_STOP06,
+						:C_ROLL_STOP07,
+						:C_ROLL_STOP08,
+						:C_ANN_ST,
+						 (SELECT USER_LAST_VALUE 
+						    FROM TDPP300 A
+						   INNER JOIN QICS213 B ON A.SEQ_Q100 = B.SEQ_Q100 AND A.SEQ_T300 = B.SEQ_T300 AND FIELD_NAME = 'C_JUDG'
+						   WHERE A.SEQ_Q100 = :SEQ_Q100
+						     AND A.FORM_TYPE = 'R')
+					)
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="BOL_QA_MQC_COIL_DETAIL1" mappingStyle="none">
+			<statement>
+				<![CDATA[
+					INSERT INTO BOL_QA_MQC_COIL_DETAIL1 (    
+					    SEQ_Q100,
+						SEQ_T300,
+						COLLECTION_ID,                            
+						NG_CODE_ID,                               
+						SURFACE_B,                                
+						SURFACE_C,                                
+						SURFACE_D,                                
+						SURFACE_K,                                
+						REAR_B,                                   
+						REAR_C,                                   
+						REAR_D,                                   
+						REAR_K,                                   
+						CREATION_DATE,                            
+						CREATED_BY,                               
+						LAST_UPDATE_DATE,                         
+						LAST_UPDATED_BY,                          
+						LAST_UPDATE_LOGIN 
+					) 
+						SELECT 
+						    S.SEQ_Q100,
+						    S.SEQ_T300,
+						    S.COLLECTION_ID,                            
+							S.NG_CODE_ID,                               
+							S.SURFACE_B,                                
+							S.SURFACE_C,                                
+							S.SURFACE_D,                                
+							S.SURFACE_K,                                
+							S.REAR_B,                                   
+							S.REAR_C,                                   
+							S.REAR_D,                                   
+							S.REAR_K,                                   
+							getdate() AS CREATION_DATE,                            
+							'-1' AS CREATED_BY,                               
+							getdate() AS LAST_UPDATE_DATE,                         
+							'-1' AS LAST_UPDATED_BY,                          
+							'-1' AS LAST_UPDATE_LOGIN
+					  FROM (
+							SELECT
+							    NULL AS	SEQ_Q100,
+						        NULL AS	SEQ_T300,
+								NULL AS	COLLECTION_ID,                            
+								NULL AS	NG_CODE_ID,                               
+								NULL AS	SURFACE_B,                                
+								NULL AS	SURFACE_C,                                
+								NULL AS	SURFACE_D,                                
+								NULL AS	SURFACE_K,                                
+								NULL AS	REAR_B,                                   
+								NULL AS	REAR_C,                                   
+								NULL AS	REAR_D,                                   
+								NULL AS	REAR_K  
+#foreach( $rm in $insertRows )
+ 						UNION ALL
+						SELECT
+						LTRIM('$rm.SEQ_Q100') AS SEQ_Q100,
+						LTRIM('$rm.SEQ_T300') AS SEQ_T300,
+						LTRIM('$rm.COLLECTION_ID') AS COLLECTION_ID,
+						LTRIM('$rm.code') AS NG_CODE_ID,                               
+						LTRIM('$rm.SB') AS SURFACE_B,                                
+						LTRIM('$rm.SC') AS SURFACE_C,                                
+						LTRIM('$rm.SD') AS SURFACE_D,                                
+						LTRIM('$rm.SK') AS SURFACE_K,                                
+						LTRIM('$rm.RB') AS REAR_B,                                   
+						LTRIM('$rm.RC') AS REAR_C,                                   
+						LTRIM('$rm.RD') AS REAR_D,                                   
+						LTRIM('$rm.RK') AS REAR_K                 
+#end
+						)S
+						WHERE S.SEQ_T300 IS NOT NULL						
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="BOL_QA_MQC_COIL_DETAIL2" mappingStyle="none">
+			<statement>
+				<![CDATA[
+					INSERT INTO BOL_QA_MQC_COIL_DETAIL2 (    
+					    SEQ_Q100,
+						SEQ_T300,
+						COLLECTION_ID,                            
+						COLLECT_TYPE,                               
+						M_START,                                
+						M_END,                                
+						CREATION_DATE,                            
+						CREATED_BY,                               
+						LAST_UPDATE_DATE,                         
+						LAST_UPDATED_BY,                          
+						LAST_UPDATE_LOGIN 
+					) 
+						SELECT 
+						    S.SEQ_Q100,
+						    S.SEQ_T300,
+						    S.COLLECTION_ID,                            
+							S.COLLECT_TYPE,                               
+							S.M_START,                                
+							S.M_END,                                
+							getdate() AS CREATION_DATE,                            
+							'-1' AS CREATED_BY,                               
+							getdate() AS LAST_UPDATE_DATE,                         
+							'-1' AS LAST_UPDATED_BY,                          
+							'-1' AS LAST_UPDATE_LOGIN
+					  FROM (
+							SELECT
+							    NULL AS	SEQ_Q100,
+						        NULL AS	SEQ_T300,
+								NULL AS	COLLECTION_ID,                            
+								NULL AS	COLLECT_TYPE,                               
+								NULL AS	M_START,                                
+								NULL AS	M_END                                
+#foreach( $rm in $insertRows )
+ 						UNION ALL
+						SELECT
+						LTRIM('$rm.SEQ_Q100') AS SEQ_Q100,
+						LTRIM('$rm.SEQ_T300') AS SEQ_T300,
+						LTRIM('$rm.COLLECTION_ID') AS COLLECTION_ID,
+						LTRIM('$rm.COLLECT_TYPE') AS NG_CODE_ID,                               
+					#if($rm.M_START && !$rm.M_START.equals("")  )
+						LTRIM('$rm.M_START')  AS M_START,
+					#else
+						NULL AS M_START,
+					#end						                         
+						                                
+					#if($rm.M_END && !$rm.M_END.equals("")  )
+						LTRIM('$rm.M_END') AS M_END                             
+					#else
+						NULL AS M_END
+					#end
+				 
+#end
+						)S
+						WHERE S.SEQ_T300 IS NOT NULL	
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="BOL_QA_MQC_COIL_DETAIL3" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				   INSERT INTO BOL_QA_MQC_COIL_DETAIL3 (  
+				      SEQ_Q100,
+				      SEQ_T300,  
+					   COLLECTION_ID,                            
+					   A1,                                       
+					   A2,                                       
+					   A3,                                       
+					   A4,                                       
+					   A5,                                       
+					   A6,                                       
+					   A7,                                       
+					   A8,                                       
+					   A9,                                       
+					   A10,                                      
+					   A11,                                      
+					   A12,                                      
+					   A13,                                      
+					   A14,                                      
+					   A15,                                      
+					   A16,                                      
+					   A17,                                      
+					   A18,                                      
+					   B1,                                       
+					   B2,                                       
+					   B3,                                       
+					   B4,                                       
+					   B5,                                       
+					   B6,                                       
+					   B7,                                       
+					   B8,                                       
+					   B9,                                       
+					   B10,                                      
+					   B11,                                      
+					   B12,                                      
+					   B13,                                      
+					   B14,                                      
+					   B15,                                      
+					   B16,                                      
+					   B17,                                      
+					   B18,                                      
+					   C1,                                       
+					   C2,                                       
+					   C3,                                       
+					   C4,                                       
+					   C5,                                       
+					   C6,                                       
+					   C7,                                       
+					   C8,                                       
+					   C9,                                       
+					   C10,                                      
+					   C11,                                      
+					   C12,                                      
+					   C13,                                      
+					   C14,                                      
+					   C15,                                      
+					   C16,                                      
+					   C17,                                      
+					   C18,                                      
+					   D1,                                       
+					   D2,                                       
+					   D3,                                       
+					   D4,                                       
+					   D5,                                       
+					   D6,                                       
+					   D7,                                       
+					   D8,                                       
+					   D9,                                       
+					   D10,                                      
+					   D11,                                      
+					   D12,                                      
+					   D13,                                      
+					   D14,                                      
+					   D15,                                      
+					   D16,                                      
+					   D17,                                      
+					   D18,                                      
+					   E1,                                       
+					   E2,                                       
+					   E3,                                       
+					   E4,                                       
+					   E5,                                       
+					   E6,                                       
+					   E7,                                       
+					   E8,                                       
+					   E9,                                       
+					   E10,                                      
+					   E11,                                      
+					   E12,                                      
+					   E13,                                      
+					   E14,                                      
+					   E15,                                      
+					   E16,                                      
+					   E17,                                      
+					   E18,                                      
+					   F1,                                       
+					   F2,                                       
+					   F3,                                       
+					   F4,                                       
+					   F5,                                       
+					   F6,                                       
+					   F7,                                       
+					   F8,                                       
+					   F9,                                       
+					   F10,                                      
+					   F11,                                      
+					   F12,                                      
+					   F13,                                      
+					   F14,                                      
+					   F15,                                      
+					   F16,                                      
+					   F17,                                      
+					   F18,                                      
+					   G1,                                       
+					   G2,                                       
+					   G3,                                       
+					   G4,                                       
+					   G5,                                       
+					   G6,                                       
+					   G7,                                       
+					   G8,                                       
+					   G9,                                       
+					   G10,                                      
+					   G11,                                      
+					   G12,                                      
+					   G13,                                      
+					   G14,                                      
+					   G15,                                      
+					   G16,                                      
+					   G17,                                      
+					   G18,                                      
+					   H1,                                       
+					   H2,                                       
+					   H3,                                       
+					   H4,                                       
+					   H5,                                       
+					   H6,                                       
+					   H7,                                       
+					   H8,                                       
+					   H9,                                       
+					   H10,                                      
+					   H11,                                      
+					   H12,                                      
+					   H13,                                      
+					   H14,                                      
+					   H15,                                      
+					   H16,                                      
+					   H17,                                      
+					   H18,                                      
+					   I1,                                       
+					   I2,                                       
+					   I3,                                       
+					   I4,                                       
+					   J1,                                       
+					   J2,                                       
+					   J3,                                       
+					   J4,                                       
+					   K1,                                       
+					   K2,                                       
+					   K3,                                       
+					   K4,                                       
+					   L1,                                       
+					   L2,                                       
+					   L3,                                       
+					   L4,                                       
+					   CREATED_BY,                               
+					   CREATION_DATE,                            
+					   LAST_UPDATED_BY,                          
+					   LAST_UPDATE_DATE,                         
+					   LAST_UPDATE_LOGIN      
+				) VALUES (
+					 :SEQ_Q100,
+				      :SEQ_T300,  
+					   :COLLECTION_ID,                            
+					   :C_MSP01,                                       
+					   :C_MSP02,                                       
+					   :C_MSP03,                                       
+					   :C_MSP04,                                       
+					   :C_MSP05,                                       
+					   :C_MSP06,                                       
+					   :C_MSP07,                                       
+					   :C_MSP08,                                       
+					   :C_MSP09,                                       
+					   :C_MSP10,                                      
+					   :C_MSP11,                                      
+					   :C_MSP12,                                      
+					   :C_MSP13,                                      
+					   :C_MSP14,                                      
+					   :C_MSP15,                                      
+					   :C_MSP16,                                      
+					   :C_MSP17,                                      
+					   :C_MSP18,                                      
+					   :C_MST01,                                       
+					   :C_MST02,                                       
+					   :C_MST03,                                       
+					   :C_MST04,                                       
+					   :C_MST05,                                       
+					   :C_MST06,                                       
+					   :C_MST07,                                       
+					   :C_MST08,                                       
+					   :C_MST09,                                       
+					   :C_MST10,                                      
+					   :C_MST11,                                      
+					   :C_MST12,                                      
+					   :C_MST13,                                      
+					   :C_MST14,                                      
+					   :C_MST15,                                      
+					   :C_MST16,                                      
+					   :C_MST17,                                      
+					   :C_MST18,                                      
+					   :C_MSW01,                                       
+					   :C_MSW02,                                       
+					   :C_MSW03,                                       
+					   :C_MSW04,                                       
+					   :C_MSW05,                                       
+					   :C_MSW06,                                       
+					   :C_MSW07,                                       
+					   :C_MSW08,                                       
+					   :C_MSW09,                                       
+					   :C_MSW10,                                      
+					   :C_MSW11,                                      
+					   :C_MSW12,                                      
+					   :C_MSW13,                                      
+					   :C_MSW14,                                      
+					   :C_MSW15,                                      
+					   :C_MSW16,                                      
+					   :C_MSW17,                                      
+					   :C_MSW18,                                      
+					   :C_M01,                                       
+					   :C_M02,                                       
+					   :C_M03,                                       
+					   :C_M04,                                       
+					   :C_M05,                                       
+					   :C_M06,                                       
+					   :C_M07,                                       
+					   :C_M08,                                       
+					   :C_M09,                                       
+					   :C_M10,                                      
+					   :C_M11,                                      
+					   :C_M12,                                      
+					   :C_M13,                                      
+					   :C_M14,                                      
+					   :C_M15,                                      
+					   :C_M16,                                      
+					   :C_M17,                                      
+					   :C_M18,                                      
+					   :C_SH01,                                       
+					   :C_SH02,                                       
+					   :C_SH03,                                       
+					   :C_SH04,                                       
+					   :C_SH05,                                       
+					   :C_SH06,                                       
+					   :C_SH07,                                       
+					   :C_SH08,                                       
+					   :C_SH09,                                       
+					   :C_SH10,                                      
+					   :C_SH11,                                      
+					   :C_SH12,                                      
+					   :C_SH13,                                      
+					   :C_SH14,                                      
+					   :C_SH15,                                      
+					   :C_SH16,                                      
+					   :C_SH17,                                      
+					   :C_SH18,                                      
+					   :C_ST01,                                       
+					   :C_ST02,                                       
+					   :C_ST03,                                       
+					   :C_ST04,                                       
+					   :C_ST05,                                       
+					   :C_ST06,                                       
+					   :C_ST07,                                       
+					   :C_ST08,                                       
+					   :C_ST09,                                       
+					   :C_ST10,                                      
+					   :C_ST11,                                      
+					   :C_ST12,                                      
+					   :C_ST13,                                      
+					   :C_ST14,                                      
+					   :C_ST15,                                      
+					   :C_ST16,                                      
+					   :C_ST17,                                      
+					   :C_ST18,                                      
+					   :C_RH01,                                       
+					   :C_RH02,                                       
+					   :C_RH03,                                       
+					   :C_RH04,                                       
+					   :C_RH05,                                       
+					   :C_RH06,                                       
+					   :C_RH07,                                       
+					   :C_RH08,                                       
+					   :C_RH09,                                       
+					   :C_RH10,                                      
+					   :C_RH11,                                      
+					   :C_RH12,                                      
+					   :C_RH13,                                      
+					   :C_RH14,                                      
+					   :C_RH15,                                      
+					   :C_RH16,                                      
+					   :C_RH17,                                      
+					   :C_RH18,                                      
+					   :C_RT01,                                       
+					   :C_RT02,                                       
+					   :C_RT03,                                       
+					   :C_RT04,                                       
+					   :C_RT05,                                       
+					   :C_RT06,                                       
+					   :C_RT07,                                       
+					   :C_RT08,                                       
+					   :C_RT09,                                       
+					   :C_RT10,                                      
+					   :C_RT11,                                      
+					   :C_RT12,                                      
+					   :C_RT13,                                      
+					   :C_RT14,                                      
+					   :C_RT15,                                      
+					   :C_RT16,                                      
+					   :C_RT17,                                      
+					   :C_RT18,                                      
+					   :SC,                                       
+					   :SD,                                       
+					   :SK,                                       
+					   :ST,                                       
+					   :SCP,                                       
+					   :SDP,                                       
+					   :SKP,                                       
+					   :STP,                                       
+					   :RC,                                       
+					   :RD,                                       
+					   :RK,                                       
+					   :RT,                                       
+					   :RCP,                                       
+					   :RDP,                                       
+					   :RKP,                                       
+					   :RTP,                                       
+						getdate(),                           
+						'-1',                              
+						getdate(),                        
+						'-1',                         
+						'-1'   
+				)                   	
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="HB_QM_UFS_IF_INSPECTION" mappingStyle="none">
+			<statement>
+				<![CDATA[
+					 SELECT                                                                  
+					INS_GUBUN,                                                                                  
+					(CASE WHEN ISNULL(COLLECTION_ID, '') = '' THEN '' ELSE COLLECTION_ID END) AS COLLECTION_ID,                             
+					STEEL,                                                                                     
+					OPERATION_SEQ_NUM,                                                                         
+					MFG_WEIGHT,                                                                                
+					TRANSACTION_ID,                                                                            
+					STEEL_CODE,                                                                                
+					WIDTH,                                                                                     
+					THICKNESS,                                                                                 
+					ORDER_NUMBER,                                                                              
+					LINE_NUMBER,                                                                               
+					ORDER_USAGE_CODE,                                                                          
+					ORDER_USAGE_CODE_DESC,                                                                     
+					ORDER_USAGE_END_USER_CODE,                                                                 
+					ORDER_USAGE_DESC,                                                                          
+					HEAT_POC_NUMBER,                                                                           
+					INVENTORY_ITEM_ID,                                                                         
+					TICKNESS_STANDARD,                                                                         
+					WORKDATE,                                                
+					WORK_TEAM,                                                                                 
+					WIP_RESOURCE_CODE,                                                                         
+					ITEM_CODE,                                                                                 
+					OP_START_DATE,                                        
+					'' AS POP_TRANSACTION_ID,                                                                  
+					'' AS RESOURCE_CODE,                                                                       
+					CREATION_DATE,                                                                             
+					CREATED_BY,                                                                                
+					LAST_UPDATE_DATE,                                                                          
+					LAST_UPDATED_BY,                                                                           
+					LAST_UPDATE_LOGIN    
+					 FROM HB_QM_UFS_IF_INSPECTION
+					 WHERE UFS_PAGE_ID='TEMP01'
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		
+		<query id="DEL_QA_MQC_COIL_MST" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				   DELETE FROM  BOL_QA_MQC_COIL_MST  
+				   WHERE   SEQ_Q100 = :SEQ_Q100
+				    AND       SEQ_T300 = :SEQ_T300		
+ 
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="DEL_QA_MQC_COIL_DETAIL1" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				   DELETE FROM  BOL_QA_MQC_COIL_DETAIL1  
+				   WHERE   SEQ_Q100 = :SEQ_Q100
+				    AND       SEQ_T300 = :SEQ_T300					
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="DEL_QA_MQC_COIL_DETAIL2" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				   DELETE FROM  BOL_QA_MQC_COIL_DETAIL2  
+				   WHERE   SEQ_Q100 = :SEQ_Q100
+				    AND       SEQ_T300 = :SEQ_T300
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="DEL_QA_MQC_COIL_DETAIL3" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				   DELETE FROM  BOL_QA_MQC_COIL_DETAIL3  
+				   WHERE   SEQ_Q100 = :SEQ_Q100
+				    AND       SEQ_T300 = :SEQ_T300
+					                    	
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>		
+		
+		<query id="UP_QA_MQC_COIL_MST" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				   UPDATE  BOL_QA_MQC_COIL_MST  
+				   SET COLLECTION_ID =:COLLECTION_ID 
+				          ,OPERATION_SEQ_NUM=:OPERATION_SEQ_NUM
+				          ,THICKNESS=:THICKNESS
+				          ,WIDTH=:WIDTH
+				          ,MFG_WEIGHT=:MFG_WEIGHT
+				          ,TICKNESS_STANDARD=:TICKNESS_STANDARD
+				          ,TRANSACTION_ID=:TRANSACTION_ID
+				          ,WORK_DATE=:WORK_DATE
+				          ,WORK_TEAM=:WORK_TEAM
+				           ,RESOURCE_CODE=:WIP_RESOURCE_CODE
+				           ,TICKNESS_SPEC_RANGE=(CASE WHEN TICKNESS_SPEC_RANGE IS NULL THEN  :TICKNESS_SPEC_RANGE ELSE TICKNESS_SPEC_RANGE END)
+				          ,ITEM_CODE=:ITEM_CODE
+				          ,INVENTORY_ITEM_ID=:INVENTORY_ITEM_ID
+				          ,ORDER_NUMBER=:ORDER_NUMBER
+				          ,LINE_NUMBER=:LINE_NUMBER
+				          ,OP_START_DATE=:OP_START_DATE
+				          ,ORDER_USAGE_CODE=:ORDER_USAGE_CODE
+				          ,ORDER_USAGE_DESC=:ORDER_USAGE_DESC
+				          ,ORDER_USAGE_END_USER_CODE=:ORDER_USAGE_END_USER_CODE
+				          ,HEAT_POC_NUMBER=:HEAT_POC_NUMBER
+				          ,STEEL_CODE=:STEEL_CODE
+				   WHERE   SEQ_Q100 = :SEQ_Q100
+				    AND       SEQ_T300 = :SEQ_T300		
+ 
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="UP_QA_MQC_COIL_DETAIL1" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				   UPDATE   BOL_QA_MQC_COIL_DETAIL1  SET COLLECTION_ID =:COLLECTION_ID 
+				   WHERE   SEQ_Q100 = :SEQ_Q100
+				    AND       SEQ_T300 = :SEQ_T300					
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="UP_QA_MQC_COIL_DETAIL2" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				   UPDATE   BOL_QA_MQC_COIL_DETAIL2   SET COLLECTION_ID =:COLLECTION_ID 
+				   WHERE   SEQ_Q100 = :SEQ_Q100
+				    AND       SEQ_T300 = :SEQ_T300
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="UP_QA_MQC_COIL_DETAIL3" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				   UPDATE  BOL_QA_MQC_COIL_DETAIL3  SET COLLECTION_ID =:COLLECTION_ID
+				   WHERE   SEQ_Q100 = :SEQ_Q100
+				    AND       SEQ_T300 = :SEQ_T300
+					                    	
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>				
+		
+		<query id="SELECT_MST" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				   SELECT *  FROM  BOL_QA_MQC_COIL_MST  
+				   WHERE   SEQ_Q100 = :SEQ_Q100
+				    AND       SEQ_T300 = :SEQ_T300		
+ 
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="SELECT_DETAIL1" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				   SELECT *   FROM  BOL_QA_MQC_COIL_DETAIL1  
+				   WHERE   SEQ_Q100 = :SEQ_Q100
+				    AND       SEQ_T300 = :SEQ_T300					
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="SELECT_DETAIL2" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				   SELECT *     FROM  BOL_QA_MQC_COIL_DETAIL2   
+				   WHERE   SEQ_Q100 = :SEQ_Q100
+				    AND       SEQ_T300 = :SEQ_T300
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="SELECT_DETAIL3" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				   SELECT * FROM   BOL_QA_MQC_COIL_DETAIL3   
+				   WHERE   SEQ_Q100 = :SEQ_Q100
+				    AND       SEQ_T300 = :SEQ_T300
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>			
+		<query id="BOL_QA_LQC_COIL_RESULTS" mappingStyle="none">
+			<statement>
+				<![CDATA[
+						INSERT INTO BOL_QA_LQC_COIL_RESULTS (
+								SEQ_Q100,
+								SEQ_T300,
+								COLLECTION_ID,
+								ORGANIZATION_ID,
+								POC_NUMBER,
+								OPERATION_RESOURCE,
+								INSPECTION_DATE,
+								INSPECTOR,
+								WEIGHT,
+								TICKNESS,
+								WIDTH,
+								LENGTH,
+								SURFACE,
+								COATING,
+								OK_NG,
+								GRADE,
+								NG_CODE,
+								TICKNESS_STANDARD,
+								CREATION_DATE,
+								CREATED_BY,
+								LAST_UPDATE_DATE,
+								LAST_UPDATED_BY,
+								LAST_UPDATE_LOGIN,
+								OPERATOR,
+								ORDER_DELIVERY,
+								OK_SURFACE,
+								OK_GRADE,
+								MILLEDGE_GBN,
+								IO_GBN,
+								CROWN_OP,
+								CROWN_OC,
+								CROWN_CE,
+								CROWN_DC,
+								CROWN_DR,
+								SAMPLE_POSITION,
+								ORDER_USAGE_CODE,
+								ORDER_USAGE_DESC,
+								ORDER_USAGE_END_USER_CODE,
+								STEEL_CODE,
+								STEEL_DESC,
+								INVENTORY_ITEM_ID,
+								HEAT_POC_NUMBER,
+								ITEM_THICKNESS,
+								ITEM_WIDTH,
+								HOOP_OK,
+								PRESENCE,
+								GOLD_DUST,
+								SPECIAL_APPOINTMENT,
+								ROLL_STOP,
+								ROLL_STOP1,
+								ROLL_STOP2,
+								ROLL_STOP3,
+								ROLL_STOP4,
+								ROLL_STOP5,
+								ROLL_STOP6,
+								ROLL_STOP7
+							) VALUES (
+								:SEQ_Q100,
+								:SEQ_T300,
+								:COLLECTION_ID,
+								:ORGANIZATION_ID,
+								:POC_NO,
+								:IN_LINE,
+								:WORK_DATE,
+								:C_CHK_NO,
+								:MGT_WEIGHT,
+								:C_MST02,
+								:C_MSW02,
+								:C_LEN,
+								:C_SKIN,
+								:C_COAT_VALUE,       
+								'N',           
+								:C_LV,
+								:C_MDCODE,
+								:TICKNESS_STANDARD,
+								getdate(),                           
+								'-1',                              
+								getdate(),                        
+								'-1',                         
+								'-1',
+								:C_CHK_NO,
+								:ORDER_DELIVERY,
+								:C_ASKIN,
+								:C_ALV,
+								:MILLEDGE_GBN,
+								:C_BEST_VALUE,
+								:C_OP11,
+								:C_OP12,
+								:C_OP13,
+								:C_OP14,
+								:C_OP15,
+								:C_SMPL01,           
+								:ORDER_USAGE_CODE,
+								:ORDER_USAGE_DESC,
+								:ORDER_USAGE_END_USER_CODE,
+								:C_STP_NM, 
+								:C_STP,
+								:INVENTORY_ITEM_ID,
+								:HEAT_POC_NUMBER,
+								:TARGET_THICKNESS,
+								:LAST_WIDTH,
+								:C_HOOP_VALUE,
+								:PRESENCE,
+								:GOLD_DUST,
+								:SPECIAL_APPOINTMENT,
+								:C_ROLL_STOP01, 
+				    			:C_ROLL_STOP02,                              
+				    			:C_ROLL_STOP03, 
+					    		:C_ROLL_STOP04,
+					    		:C_ROLL_STOP05,
+					    		:C_ROLL_STOP06,
+					    		:C_ROLL_STOP07,
+					    		:C_ROLL_STOP08
+							)
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>			
+		<query id="UP_QA_LQC_COIL_RESULTS" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				   UPDATE  BOL_QA_LQC_COIL_RESULTS
+				   SET COLLECTION_ID =:COLLECTION_ID 
+				          ,TICKNESS_STANDARD=:TICKNESS_STANDARD
+				          ,ORDER_USAGE_CODE=:ORDER_USAGE_CODE
+				          ,ORDER_USAGE_DESC=:ORDER_USAGE_DESC
+				          ,ORDER_USAGE_END_USER_CODE=:ORDER_USAGE_END_USER_CODE
+				          ,STEEL_CODE=(CASE WHEN STEEL_CODE IS NULL THEN :STEEL_CODE ELSE STEEL_CODE END)
+				          ,STEEL_DESC=(CASE WHEN STEEL_DESC IS NULL THEN :STEEL ELSE STEEL_DESC END)
+				          ,INVENTORY_ITEM_ID=:INVENTORY_ITEM_ID
+				          ,WEIGHT = :MFG_WEIGHT
+				          ,HEAT_POC_NUMBER=:HEAT_POC_NUMBER
+				   WHERE   SEQ_Q100 = :SEQ_Q100
+				    AND       SEQ_T300 = :SEQ_T300		
+ 
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>		
+		<query id="DEL_QA_LQC_COIL_RESULTS" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				   DELETE FROM  BOL_QA_LQC_COIL_RESULTS
+				   WHERE   SEQ_Q100 = :SEQ_Q100
+				    AND       SEQ_T300 = :SEQ_T300		
+ 
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+				<query id="BOL_QA_ME_COIL_RESULTS" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				INSERT INTO BOL_QA_ME_COIL_RESULTS (    
+						SEQ_Q100,
+						SEQ_T300,
+						POC_NUMBER,
+						INSPECTION_DATE,
+						ORGANIZATION_ID,
+						STEEL,
+						SURFACE,
+						THICKNESS,
+						WIDTH,
+						GRADE,
+						INS_POSITION1,
+						INS_POSITION2,
+						INS_POSITION3,
+						INS_POSITION4,
+						INS_POSITION5,
+						INS_POSITION6,
+						INS_POSITION7,
+						INS_POSITION8,
+						INS_POSITION9,
+						INS_POSITION10,
+						INS_POSITION11,
+						INS_POSITION12,
+						INS_POSITION13,
+						INS_POSITION14,
+						INS_POSITION15,
+						INS_POSITION16,
+						INS_POSITION17,
+						INS_POSITION18,
+						INS_THICKNESS1,
+						INS_THICKNESS2,
+						INS_THICKNESS3,
+						INS_THICKNESS4,
+						INS_THICKNESS5,
+						INS_THICKNESS6,
+						INS_THICKNESS7,
+						INS_THICKNESS8,
+						INS_THICKNESS9,
+						INS_THICKNESS10,
+						INS_THICKNESS11,
+						INS_THICKNESS12,
+						INS_THICKNESS13,
+						INS_THICKNESS14,
+						INS_THICKNESS15,
+						INS_THICKNESS16,
+						INS_THICKNESS17,
+						INS_THICKNESS18,
+						INS_WIDTH1,
+						INS_WIDTH2,
+						INS_WIDTH3,
+						INS_WIDTH4,
+						INS_WIDTH5,
+						INS_WIDTH6,
+						INS_WIDTH7,
+						INS_WIDTH8,
+						INS_WIDTH9,
+						INS_WIDTH10,
+						INS_WIDTH11,
+						INS_WIDTH12,
+						INS_WIDTH13,
+						INS_WIDTH14,
+						INS_WIDTH15,
+						INS_WIDTH16,
+						INS_WIDTH17,
+						INS_WIDTH18,
+						D1,
+						D2,
+						D3,
+						D4,
+						D5,
+						D6,
+						D7,
+						D8,
+						D9,
+						D10,
+						D11,
+						D12,
+						D13,
+						D14,
+						D15,
+						D16,
+						D17,
+						D18,
+						E1,
+						E2,
+						E3,
+						E4,
+						E5,
+						E6,
+						E7,
+						E8,
+						E9,
+						E10,
+						E11,
+						E12,
+						E13,
+						E14,
+						E15,
+						E16,
+						E17,
+						E18,
+						F1,
+						F2,
+						F3,
+						F4,
+						F5,
+						F6,
+						F7,
+						F8,
+						F9,
+						F10,
+						F11,
+						F12,
+						F13,
+						F14,
+						F15,
+						F16,
+						F17,
+						F18,
+						G1,
+						G2,
+						G3,
+						G4,
+						G5,
+						G6,
+						G7,
+						G8,
+						G9,
+						G10,
+						G11,
+						G12,
+						G13,
+						G14,
+						G15,
+						G16,
+						G17,
+						G18,
+						H1,
+						H2,
+						H3,
+						H4,
+						H5,
+						H6,
+						H7,
+						H8,
+						H9,
+						H10,
+						H11,
+						H12,
+						H13,
+						H14,
+						H15,
+						H16,
+						H17,
+						H18,
+						ROLL_STOP,
+						ROLL_STOP1,
+						ROLL_STOP2,
+						ROLL_STOP3,
+						ROLL_STOP4,
+						ROLL_STOP5,
+						ROLL_STOP6,
+						ROLL_STOP7,
+						INVENTORY_ITEM_ID,
+						ORDER_NUMBER,
+						LINE_NUMBER,
+						HEAT_POC_NUMBER,
+						INSPECTOR,
+						ITEM_CODE,
+						CREATION_DATE,
+						CREATED_BY,
+						LAST_UPDATE_DATE,
+						LAST_UPDATED_BY,
+						LAST_UPDATE_LOGIN,
+						STEEL_CODE,
+						COIL_LENGTH,
+						CERTIFIED_SURFACE,
+						COILLING_RANGE
+					) VALUES (
+				        :SEQ_Q100,
+						:SEQ_T300,
+						:POC_NO, 
+						:WORK_DATE,   
+						:ORGANIZATION_ID, 
+						:C_STP,
+						:C_SKIN,  
+						:TARGET_THICKNESS,                               
+						:LAST_WIDTH,  
+						:C_LV,  
+					   :C_MSP01,                                       
+					   :C_MSP02,                                       
+					   :C_MSP03,                                       
+					   :C_MSP04,                                       
+					   :C_MSP05,                                       
+					   :C_MSP06,                                       
+					   :C_MSP07,                                       
+					   :C_MSP08,                                       
+					   :C_MSP09,                                       
+					   :C_MSP10,                                      
+					   :C_MSP11,                                      
+					   :C_MSP12,                                      
+					   :C_MSP13,                                      
+					   :C_MSP14,                                      
+					   :C_MSP15,                                      
+					   :C_MSP16,                                      
+					   :C_MSP17,                                      
+					   :C_MSP18,                                      
+					   :C_MST01,                                       
+					   :C_MST02,                                       
+					   :C_MST03,                                       
+					   :C_MST04,                                       
+					   :C_MST05,                                       
+					   :C_MST06,                                       
+					   :C_MST07,                                       
+					   :C_MST08,                                       
+					   :C_MST09,                                       
+					   :C_MST10,                                      
+					   :C_MST11,                                      
+					   :C_MST12,                                      
+					   :C_MST13,                                      
+					   :C_MST14,                                      
+					   :C_MST15,                                      
+					   :C_MST16,                                      
+					   :C_MST17,                                      
+					   :C_MST18,                                      
+					   :C_MSW01,                                       
+					   :C_MSW02,                                       
+					   :C_MSW03,                                       
+					   :C_MSW04,                                       
+					   :C_MSW05,                                       
+					   :C_MSW06,                                       
+					   :C_MSW07,                                       
+					   :C_MSW08,                                       
+					   :C_MSW09,                                       
+					   :C_MSW10,                                      
+					   :C_MSW11,                                      
+					   :C_MSW12,                                      
+					   :C_MSW13,                                      
+					   :C_MSW14,                                      
+					   :C_MSW15,                                      
+					   :C_MSW16,                                      
+					   :C_MSW17,                                      
+					   :C_MSW18,                                      
+					   :C_M01,                                       
+					   :C_M02,                                       
+					   :C_M03,                                       
+					   :C_M04,                                       
+					   :C_M05,                                       
+					   :C_M06,                                       
+					   :C_M07,                                       
+					   :C_M08,                                       
+					   :C_M09,                                       
+					   :C_M10,                                      
+					   :C_M11,                                      
+					   :C_M12,                                      
+					   :C_M13,                                      
+					   :C_M14,                                      
+					   :C_M15,                                      
+					   :C_M16,                                      
+					   :C_M17,                                      
+					   :C_M18,                                      
+					   :C_SH01,                                       
+					   :C_SH02,                                       
+					   :C_SH03,                                       
+					   :C_SH04,                                       
+					   :C_SH05,                                       
+					   :C_SH06,                                       
+					   :C_SH07,                                       
+					   :C_SH08,                                       
+					   :C_SH09,                                       
+					   :C_SH10,                                      
+					   :C_SH11,                                      
+					   :C_SH12,                                      
+					   :C_SH13,                                      
+					   :C_SH14,                                      
+					   :C_SH15,                                      
+					   :C_SH16,                                      
+					   :C_SH17,                                      
+					   :C_SH18,                                      
+					   :C_ST01,                                       
+					   :C_ST02,                                       
+					   :C_ST03,                                       
+					   :C_ST04,                                       
+					   :C_ST05,                                       
+					   :C_ST06,                                       
+					   :C_ST07,                                       
+					   :C_ST08,                                       
+					   :C_ST09,                                       
+					   :C_ST10,                                      
+					   :C_ST11,                                      
+					   :C_ST12,                                      
+					   :C_ST13,                                      
+					   :C_ST14,                                      
+					   :C_ST15,                                      
+					   :C_ST16,                                      
+					   :C_ST17,                                      
+					   :C_ST18,                                      
+					   :C_RH01,                                       
+					   :C_RH02,                                       
+					   :C_RH03,                                       
+					   :C_RH04,                                       
+					   :C_RH05,                                       
+					   :C_RH06,                                       
+					   :C_RH07,                                       
+					   :C_RH08,                                       
+					   :C_RH09,                                       
+					   :C_RH10,                                      
+					   :C_RH11,                                      
+					   :C_RH12,                                      
+					   :C_RH13,                                      
+					   :C_RH14,                                      
+					   :C_RH15,                                      
+					   :C_RH16,                                      
+					   :C_RH17,                                      
+					   :C_RH18,                                      
+					   :C_RT01,                                       
+					   :C_RT02,                                       
+					   :C_RT03,                                       
+					   :C_RT04,                                       
+					   :C_RT05,                                       
+					   :C_RT06,                                       
+					   :C_RT07,                                       
+					   :C_RT08,                                       
+					   :C_RT09,                                       
+					   :C_RT10,                                      
+					   :C_RT11,                                      
+					   :C_RT12,                                      
+					   :C_RT13,                                      
+					   :C_RT14,                                      
+					   :C_RT15,                                      
+					   :C_RT16,                                      
+					   :C_RT17,                                      
+					   :C_RT18,                                      
+		    			:C_ROLL_STOP01, 
+		    			:C_ROLL_STOP02,                              
+		    			:C_ROLL_STOP03, 
+			    		:C_ROLL_STOP04,
+			    		:C_ROLL_STOP05,
+			    		:C_ROLL_STOP06,
+			    		:C_ROLL_STOP07,
+			    		:C_ROLL_STOP08,
+						:INVENTORY_ITEM_ID,
+						:ORDER_NUMBER,
+						:LINE_NUMBER,
+						:HEAT_POC_NUMBER,
+						:C_CHK_NO,
+						:ITEM_CODE,
+						getdate(),                           
+						'-1',                              
+						getdate(),                        
+						'-1',                         
+						'-1',  
+						:STEEL_CODE,
+						:C_LEN,
+						:C_BEST_VALUE,
+						:C_COIL_ST01 + '~' + :C_COIL_ED01
+					)
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="BOL_QA_LQC_COIL_DETAIL1" mappingStyle="none">
+			<statement>
+				<![CDATA[
+					INSERT INTO BOL_QA_LQC_COIL_DETAIL1 (    
+					    SEQ_Q100,
+						SEQ_T300,
+						COLLECTION_ID,                            
+						NG_CODE_ID,                               
+						SURFACE_B,                                
+						SURFACE_C,                                
+						SURFACE_D,                                
+						SURFACE_K,                                
+						REAR_B,                                   
+						REAR_C,                                   
+						REAR_D,                                   
+						REAR_K,                                   
+						CREATION_DATE,                            
+						CREATED_BY,                               
+						LAST_UPDATE_DATE,                         
+						LAST_UPDATED_BY,                          
+						LAST_UPDATE_LOGIN 
+					) 
+						SELECT 
+						    S.SEQ_Q100,
+						    S.SEQ_T300,
+						    S.COLLECTION_ID,                            
+							S.NG_CODE_ID,                               
+							S.SURFACE_B,                                
+							S.SURFACE_C,                                
+							S.SURFACE_D,                                
+							S.SURFACE_K,                                
+							S.REAR_B,                                   
+							S.REAR_C,                                   
+							S.REAR_D,                                   
+							S.REAR_K,                                   
+							getdate() AS CREATION_DATE,                            
+							'-1' AS CREATED_BY,                               
+							getdate() AS LAST_UPDATE_DATE,                         
+							'-1' AS LAST_UPDATED_BY,                          
+							'-1' AS LAST_UPDATE_LOGIN
+					  FROM (
+							SELECT
+							    NULL AS	SEQ_Q100,
+						        NULL AS	SEQ_T300,
+								NULL AS	COLLECTION_ID,                            
+								NULL AS	NG_CODE_ID,                               
+								NULL AS	SURFACE_B,                                
+								NULL AS	SURFACE_C,                                
+								NULL AS	SURFACE_D,                                
+								NULL AS	SURFACE_K,                                
+								NULL AS	REAR_B,                                   
+								NULL AS	REAR_C,                                   
+								NULL AS	REAR_D,                                   
+								NULL AS	REAR_K  
+#foreach( $rm in $insertRows )
+ 						UNION ALL
+						SELECT
+						LTRIM('$rm.SEQ_Q100') AS SEQ_Q100,
+						LTRIM('$rm.SEQ_T300') AS SEQ_T300,
+						LTRIM('$rm.COLLECTION_ID') AS COLLECTION_ID,
+						LTRIM('$rm.code') AS NG_CODE_ID,                               
+						LTRIM('$rm.SB') AS SURFACE_B,                                
+						LTRIM('$rm.SC') AS SURFACE_C,                                
+						LTRIM('$rm.SD') AS SURFACE_D,                                
+						LTRIM('$rm.SK') AS SURFACE_K,                                
+						LTRIM('$rm.RB') AS REAR_B,                                   
+						LTRIM('$rm.RC') AS REAR_C,                                   
+						LTRIM('$rm.RD') AS REAR_D,                                   
+						LTRIM('$rm.RK') AS REAR_K                 
+#end
+						)S
+						WHERE S.SEQ_T300 IS NOT NULL						
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="BOL_QA_LQC_COIL_DETAIL2" mappingStyle="none">
+			<statement>
+				<![CDATA[
+					INSERT INTO BOL_QA_LQC_COIL_DETAIL2 (    
+					    SEQ_Q100,
+						SEQ_T300,
+						COLLECTION_ID,                            
+						COLLECT_TYPE,                               
+						M_START,                                
+						M_END,                                
+						CREATION_DATE,                            
+						CREATED_BY,                               
+						LAST_UPDATE_DATE,                         
+						LAST_UPDATED_BY,                          
+						LAST_UPDATE_LOGIN 
+					) 
+						SELECT 
+						    S.SEQ_Q100,
+						    S.SEQ_T300,
+						    S.COLLECTION_ID,                            
+							S.COLLECT_TYPE,                               
+							S.M_START,                                
+							S.M_END,                                
+							getdate() AS CREATION_DATE,                            
+							'-1' AS CREATED_BY,                               
+							getdate() AS LAST_UPDATE_DATE,                         
+							'-1' AS LAST_UPDATED_BY,                          
+							'-1' AS LAST_UPDATE_LOGIN
+					  FROM (
+							SELECT
+							    NULL AS	SEQ_Q100,
+						        NULL AS	SEQ_T300,
+								NULL AS	COLLECTION_ID,                            
+								NULL AS	COLLECT_TYPE,                               
+								NULL AS	M_START,                                
+								NULL AS	M_END                                
+#foreach( $rm in $insertRows )
+ 						UNION ALL
+						SELECT
+						LTRIM('$rm.SEQ_Q100') AS SEQ_Q100,
+						LTRIM('$rm.SEQ_T300') AS SEQ_T300,
+						LTRIM('$rm.COLLECTION_ID') AS COLLECTION_ID,
+						LTRIM('$rm.COLLECT_TYPE') AS NG_CODE_ID,                               
+					#if($rm.M_START && !$rm.M_START.equals("")  )
+						LTRIM('$rm.M_START')  AS M_START,
+					#else
+						NULL AS M_START,
+					#end						                         
+						                                
+					#if($rm.M_END && !$rm.M_END.equals("")  )
+						LTRIM('$rm.M_END') AS M_END                             
+					#else
+						NULL AS M_END
+					#end
+				 
+#end
+						)S
+						WHERE S.SEQ_T300 IS NOT NULL	
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="BOL_QA_LQC_COIL_DETAIL3" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				   INSERT INTO BOL_QA_LQC_COIL_DETAIL3 (  
+				      SEQ_Q100,
+				      SEQ_T300,  
+					   COLLECTION_ID,                            
+					   A1,                                       
+					   A2,                                       
+					   A3,                                       
+					   A4,                                       
+					   A5,                                       
+					   A6,                                       
+					   A7,                                       
+					   A8,                                       
+					   A9,                                       
+					   A10,                                      
+					   A11,                                      
+					   A12,                                      
+					   A13,                                      
+					   A14,                                      
+					   A15,                                      
+					   A16,                                      
+					   A17,                                      
+					   A18,                                      
+					   B1,                                       
+					   B2,                                       
+					   B3,                                       
+					   B4,                                       
+					   B5,                                       
+					   B6,                                       
+					   B7,                                       
+					   B8,                                       
+					   B9,                                       
+					   B10,                                      
+					   B11,                                      
+					   B12,                                      
+					   B13,                                      
+					   B14,                                      
+					   B15,                                      
+					   B16,                                      
+					   B17,                                      
+					   B18,                                      
+					   C1,                                       
+					   C2,                                       
+					   C3,                                       
+					   C4,                                       
+					   C5,                                       
+					   C6,                                       
+					   C7,                                       
+					   C8,                                       
+					   C9,                                       
+					   C10,                                      
+					   C11,                                      
+					   C12,                                      
+					   C13,                                      
+					   C14,                                      
+					   C15,                                      
+					   C16,                                      
+					   C17,                                      
+					   C18,                                      
+					   D1,                                       
+					   D2,                                       
+					   D3,                                       
+					   D4,                                       
+					   D5,                                       
+					   D6,                                       
+					   D7,                                       
+					   D8,                                       
+					   D9,                                       
+					   D10,                                      
+					   D11,                                      
+					   D12,                                      
+					   D13,                                      
+					   D14,                                      
+					   D15,                                      
+					   D16,                                      
+					   D17,                                      
+					   D18,                                      
+					   E1,                                       
+					   E2,                                       
+					   E3,                                       
+					   E4,                                       
+					   E5,                                       
+					   E6,                                       
+					   E7,                                       
+					   E8,                                       
+					   E9,                                       
+					   E10,                                      
+					   E11,                                      
+					   E12,                                      
+					   E13,                                      
+					   E14,                                      
+					   E15,                                      
+					   E16,                                      
+					   E17,                                      
+					   E18,                                      
+					   F1,                                       
+					   F2,                                       
+					   F3,                                       
+					   F4,                                       
+					   F5,                                       
+					   F6,                                       
+					   F7,                                       
+					   F8,                                       
+					   F9,                                       
+					   F10,                                      
+					   F11,                                      
+					   F12,                                      
+					   F13,                                      
+					   F14,                                      
+					   F15,                                      
+					   F16,                                      
+					   F17,                                      
+					   F18,                                      
+					   G1,                                       
+					   G2,                                       
+					   G3,                                       
+					   G4,                                       
+					   G5,                                       
+					   G6,                                       
+					   G7,                                       
+					   G8,                                       
+					   G9,                                       
+					   G10,                                      
+					   G11,                                      
+					   G12,                                      
+					   G13,                                      
+					   G14,                                      
+					   G15,                                      
+					   G16,                                      
+					   G17,                                      
+					   G18,                                      
+					   H1,                                       
+					   H2,                                       
+					   H3,                                       
+					   H4,                                       
+					   H5,                                       
+					   H6,                                       
+					   H7,                                       
+					   H8,                                       
+					   H9,                                       
+					   H10,                                      
+					   H11,                                      
+					   H12,                                      
+					   H13,                                      
+					   H14,                                      
+					   H15,                                      
+					   H16,                                      
+					   H17,                                      
+					   H18,                                      
+					   I1,                                       
+					   I2,                                       
+					   I3,                                       
+					   I4,                                       
+					   J1,                                       
+					   J2,                                       
+					   J3,                                       
+					   J4,                                       
+					   K1,                                       
+					   K2,                                       
+					   K3,                                       
+					   K4,                                       
+					   L1,                                       
+					   L2,                                       
+					   L3,                                       
+					   L4,                                       
+					   CREATED_BY,                               
+					   CREATION_DATE,                            
+					   LAST_UPDATED_BY,                          
+					   LAST_UPDATE_DATE,                         
+					   LAST_UPDATE_LOGIN      
+				) VALUES (
+					 :SEQ_Q100,
+				      :SEQ_T300,  
+					   :COLLECTION_ID,                            
+					   :C_MSP01,                                       
+					   :C_MSP02,                                       
+					   :C_MSP03,                                       
+					   :C_MSP04,                                       
+					   :C_MSP05,                                       
+					   :C_MSP06,                                       
+					   :C_MSP07,                                       
+					   :C_MSP08,                                       
+					   :C_MSP09,                                       
+					   :C_MSP10,                                      
+					   :C_MSP11,                                      
+					   :C_MSP12,                                      
+					   :C_MSP13,                                      
+					   :C_MSP14,                                      
+					   :C_MSP15,                                      
+					   :C_MSP16,                                      
+					   :C_MSP17,                                      
+					   :C_MSP18,                                      
+					   :C_MST01,                                       
+					   :C_MST02,                                       
+					   :C_MST03,                                       
+					   :C_MST04,                                       
+					   :C_MST05,                                       
+					   :C_MST06,                                       
+					   :C_MST07,                                       
+					   :C_MST08,                                       
+					   :C_MST09,                                       
+					   :C_MST10,                                      
+					   :C_MST11,                                      
+					   :C_MST12,                                      
+					   :C_MST13,                                      
+					   :C_MST14,                                      
+					   :C_MST15,                                      
+					   :C_MST16,                                      
+					   :C_MST17,                                      
+					   :C_MST18,                                      
+					   :C_MSW01,                                       
+					   :C_MSW02,                                       
+					   :C_MSW03,                                       
+					   :C_MSW04,                                       
+					   :C_MSW05,                                       
+					   :C_MSW06,                                       
+					   :C_MSW07,                                       
+					   :C_MSW08,                                       
+					   :C_MSW09,                                       
+					   :C_MSW10,                                      
+					   :C_MSW11,                                      
+					   :C_MSW12,                                      
+					   :C_MSW13,                                      
+					   :C_MSW14,                                      
+					   :C_MSW15,                                      
+					   :C_MSW16,                                      
+					   :C_MSW17,                                      
+					   :C_MSW18,                                      
+					   :C_M01,                                       
+					   :C_M02,                                       
+					   :C_M03,                                       
+					   :C_M04,                                       
+					   :C_M05,                                       
+					   :C_M06,                                       
+					   :C_M07,                                       
+					   :C_M08,                                       
+					   :C_M09,                                       
+					   :C_M10,                                      
+					   :C_M11,                                      
+					   :C_M12,                                      
+					   :C_M13,                                      
+					   :C_M14,                                      
+					   :C_M15,                                      
+					   :C_M16,                                      
+					   :C_M17,                                      
+					   :C_M18,                                      
+					   :C_SH01,                                       
+					   :C_SH02,                                       
+					   :C_SH03,                                       
+					   :C_SH04,                                       
+					   :C_SH05,                                       
+					   :C_SH06,                                       
+					   :C_SH07,                                       
+					   :C_SH08,                                       
+					   :C_SH09,                                       
+					   :C_SH10,                                      
+					   :C_SH11,                                      
+					   :C_SH12,                                      
+					   :C_SH13,                                      
+					   :C_SH14,                                      
+					   :C_SH15,                                      
+					   :C_SH16,                                      
+					   :C_SH17,                                      
+					   :C_SH18,                                      
+					   :C_ST01,                                       
+					   :C_ST02,                                       
+					   :C_ST03,                                       
+					   :C_ST04,                                       
+					   :C_ST05,                                       
+					   :C_ST06,                                       
+					   :C_ST07,                                       
+					   :C_ST08,                                       
+					   :C_ST09,                                       
+					   :C_ST10,                                      
+					   :C_ST11,                                      
+					   :C_ST12,                                      
+					   :C_ST13,                                      
+					   :C_ST14,                                      
+					   :C_ST15,                                      
+					   :C_ST16,                                      
+					   :C_ST17,                                      
+					   :C_ST18,                                      
+					   :C_RH01,                                       
+					   :C_RH02,                                       
+					   :C_RH03,                                       
+					   :C_RH04,                                       
+					   :C_RH05,                                       
+					   :C_RH06,                                       
+					   :C_RH07,                                       
+					   :C_RH08,                                       
+					   :C_RH09,                                       
+					   :C_RH10,                                      
+					   :C_RH11,                                      
+					   :C_RH12,                                      
+					   :C_RH13,                                      
+					   :C_RH14,                                      
+					   :C_RH15,                                      
+					   :C_RH16,                                      
+					   :C_RH17,                                      
+					   :C_RH18,                                      
+					   :C_RT01,                                       
+					   :C_RT02,                                       
+					   :C_RT03,                                       
+					   :C_RT04,                                       
+					   :C_RT05,                                       
+					   :C_RT06,                                       
+					   :C_RT07,                                       
+					   :C_RT08,                                       
+					   :C_RT09,                                       
+					   :C_RT10,                                      
+					   :C_RT11,                                      
+					   :C_RT12,                                      
+					   :C_RT13,                                      
+					   :C_RT14,                                      
+					   :C_RT15,                                      
+					   :C_RT16,                                      
+					   :C_RT17,                                      
+					   :C_RT18,                                      
+					   :SC,                                       
+					   :SD,                                       
+					   :SK,                                       
+					   :ST,                                       
+					   :SCP,                                       
+					   :SDP,                                       
+					   :SKP,                                       
+					   :STP,                                       
+					   :RC,                                       
+					   :RD,                                       
+					   :RK,                                       
+					   :RT,                                       
+					   :RCP,                                       
+					   :RDP,                                       
+					   :RKP,                                       
+					   :RTP,                                       
+						getdate(),                           
+						'-1',                              
+						getdate(),                        
+						'-1',                         
+						'-1'   
+				)                   	
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>		
+		
+			
+		<query id="UP_QA_ME_COIL_RESULTS" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				   UPDATE  BOL_QA_ME_COIL_RESULTS  
+				   SET STEEL =:STEEL 
+				          ,THICKNESS=:TARGET_THICKNESS
+				          ,WIDTH=:LAST_WIDTH
+				           ,INVENTORY_ITEM_ID=:INVENTORY_ITEM_ID
+				          ,ORDER_NUMBER=:ORDER_NUMBER
+				          ,LINE_NUMBER=:LINE_NUMBER
+				          ,HEAT_POC_NUMBER=:HEAT_POC_NUMBER
+				          ,ITEM_CODE=:ITEM_CODE
+				   WHERE   SEQ_Q100 = :SEQ_Q100
+				    AND       SEQ_T300 = :SEQ_T300		
+ 
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>		
+		<query id="DEL_QA_ME_COIL_RESULTS" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				   DELETE FROM  BOL_QA_ME_COIL_RESULTS  
+				   WHERE   SEQ_Q100 = :SEQ_Q100
+				    AND       SEQ_T300 = :SEQ_T300		
+ 
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="DEL_QA_LQC_COIL_DETAIL1" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				   DELETE FROM  BOL_QA_LQC_COIL_DETAIL1  
+				   WHERE   SEQ_Q100 = :SEQ_Q100
+				    AND       SEQ_T300 = :SEQ_T300					
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="DEL_QA_LQC_COIL_DETAIL2" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				   DELETE FROM  BOL_QA_LQC_COIL_DETAIL2  
+				   WHERE   SEQ_Q100 = :SEQ_Q100
+				    AND       SEQ_T300 = :SEQ_T300
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="DEL_QA_LQC_COIL_DETAIL3" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				   DELETE FROM  BOL_QA_LQC_COIL_DETAIL3  
+				   WHERE   SEQ_Q100 = :SEQ_Q100
+				    AND       SEQ_T300 = :SEQ_T300
+					                    	
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>		
+		
+		<query id="UP_QA_LQC_COIL_DETAIL1" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				   UPDATE   BOL_QA_LQC_COIL_DETAIL1  SET COLLECTION_ID =:COLLECTION_ID 
+				   WHERE   SEQ_Q100 = :SEQ_Q100
+				    AND       SEQ_T300 = :SEQ_T300					
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="UP_QA_LQC_COIL_DETAIL2" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				   UPDATE   BOL_QA_LQC_COIL_DETAIL2   SET COLLECTION_ID =:COLLECTION_ID 
+				   WHERE   SEQ_Q100 = :SEQ_Q100
+				    AND       SEQ_T300 = :SEQ_T300
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="UP_QA_LQC_COIL_DETAIL3" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				   UPDATE  BOL_QA_LQC_COIL_DETAIL3  SET COLLECTION_ID =:COLLECTION_ID
+				   WHERE   SEQ_Q100 = :SEQ_Q100
+				    AND       SEQ_T300 = :SEQ_T300
+					                    	
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="SELECT_LQC1" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				   SELECT * 
+				     FROM LQC_COIL_RESULT 
+				    WHERE SEQ_Q100 = :SEQ_Q100
+				      AND SEQ_T300 = :SEQ_T300		
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="SELECT_LQC_DETAIL1" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				   SELECT *   
+				     FROM BOL_QA_LQC_COIL_DETAIL1  
+				    WHERE SEQ_Q100 = :SEQ_Q100
+				      AND SEQ_T300 = :SEQ_T300					
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="SELECT_LQC_DETAIL2" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				   SELECT *    
+				     FROM BOL_QA_LQC_COIL_DETAIL2   
+				    WHERE SEQ_Q100 = :SEQ_Q100
+ 				      AND SEQ_T300 = :SEQ_T300
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="SELECT_LQC_DETAIL3" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				   SELECT * 
+				     FROM BOL_QA_LQC_COIL_DETAIL3   
+				    WHERE SEQ_Q100 = :SEQ_Q100
+				      AND SEQ_T300 = :SEQ_T300
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="SELECT_LQC_BAK" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				   SELECT * 
+				     FROM BOL_QA_ME_COIL_RESULTS 
+				    WHERE SEQ_Q100 = :SEQ_Q100
+				      AND SEQ_T300 = :SEQ_T300		
+ 
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="SELECT_ME" mappingStyle="none">
+			<statement>
+				<![CDATA[
+				   SELECT *  FROM  BOL_QA_ME_COIL_RESULTS 
+				   WHERE   SEQ_Q100 = :SEQ_Q100
+				    AND       SEQ_T300 = :SEQ_T300		
+ 
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="unFixInspect_TDPP300">
+			<statement>
+				<![CDATA[
+						update tdpp300 
+						set ERP_UPLOAD_YN=NULL
+						,END_YN=NULL
+						where
+						SEQ_T300 = :SEQ_T300
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="unFixInspect_QICS100">
+			<statement>
+				<![CDATA[
+						update qics100 
+						set STATUS_CODE='S'
+						where
+						SEQ_Q100 = :SEQ_Q100
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="fixInspect_TDPP300">
+			<statement>
+				<![CDATA[
+						update tdpp300 
+						set ERP_UPLOAD_YN='Y'
+						,END_YN='Y'
+						where
+						SEQ_T300 = :SEQ_T300
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="fixInspect_QICS100">
+			<statement>
+				<![CDATA[
+						update qics100 
+						set STATUS_CODE='C'
+						where
+						SEQ_Q100 = :SEQ_Q100
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>		
+		<query id="saveJudg" mappingStyle="none">
+			<statement>
+				<![CDATA[
+					UPDATE QICS213 
+					   SET USER_LAST_VALUE = :C_JUDG 
+					 WHERE SEQ_T300	= :SEQ_T300 
+					   AND FIELD_NAME = 'C_JUDG'      
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		
+			
+	</queries>
+</queryservice>
+

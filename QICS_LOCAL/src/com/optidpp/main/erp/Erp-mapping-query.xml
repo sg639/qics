@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<queryservice xmlns="http://www.anyframejava.org/schema/query/mapping"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.anyframejava.org/schema/query/mapping http://www.anyframejava.org/schema/query/mapping/anyframe-query-mapping-1.0.xsd ">
+	<queries>
+		<query id="erpPenWork">
+			<statement>
+				<![CDATA[
+					UPDATE TDPP300 SET ERP_UPLOAD_YN =:ERP_UPLOAD_YN
+															,ERP_UPLOAD_MESSAGE = :ERP_UPLOAD_MESSAGE
+														    ,ERP_UPLOAD_DATE =getdate()
+					WHERE SEQ_T300 = :SEQ_T300
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+		<query id="endPenWork">
+			<statement>
+				<![CDATA[
+					UPDATE TDPP300 SET END_YN =:END_YN
+														    ,END_DATE =getdate()
+					WHERE SEQ_T300 = :SEQ_T300
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="erpWork">
+			<statement>
+				<![CDATA[
+					UPDATE QICS100 SET STATUS_CODE =:STATUS_CODE
+														    ,UPTDATE =getdate()
+					WHERE SEQ_Q100 =(SELECT SEQ_Q100 FROM TDPP300 WHERE SEQ_T300=:SEQ_T300)
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>	
+	</queries>
+</queryservice>
+

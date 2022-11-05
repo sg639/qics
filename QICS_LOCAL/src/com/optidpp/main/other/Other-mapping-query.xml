@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<queryservice xmlns="http://www.anyframejava.org/schema/query/mapping"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.anyframejava.org/schema/query/mapping http://www.anyframejava.org/schema/query/mapping/anyframe-query-mapping-1.0.xsd ">
+	<queries>
+		<query id="getOtherInfo" mappingStyle="none">
+			<statement>
+				<![CDATA[
+					SELECT 
+						A.SEQ_Q100,
+						A.SEQ_T300,
+						A.IN_FACT,
+						A.IN_LINE,
+						A.IN_ORDER,
+						A.POC_NO,
+						A.POC_NO01,
+						A.POC_NO02,
+						A.POC_NO03,
+						A.POC_NO04,
+						A.WORK_DATE,
+						B.FORM_SEQ,
+						B.FORM_NAME
+						FROM QICS100 A INNER JOIN TDPP300 B  
+						ON A.SEQ_Q100 = B.SEQ_Q100 
+						AND A.SEQ_T300= B.SEQ_T300
+						AND B.DATA_YN='Y'
+						AND B.FORM_TYPE IN ('M','F')
+						AND A.IN_LINE =:IN_LINE
+						AND A.POC_NO01 = :POC_NO01
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>		
+		<query id="getOtherBGInfo" mappingStyle="none">
+			<statement>
+				<![CDATA[
+					SELECT 
+						A.SEQ_Q100,
+						A.SEQ_T300,
+						A.PAGE_ORDER,
+						A.BG_NAME,
+						B.P_BG,
+						B.P_BG_PATH,
+						C.FORM_ID
+						FROM QICS203 A INNER JOIN TDPP211 B
+						ON A.SEQ_T300 = B.SEQ_T300
+						AND A.PAGE_ORDER = B.P_ORDER
+						INNER JOIN TDPP201 C
+						ON A.FORM_SEQ = C.FORM_SEQ
+						AND A.SEQ_Q100=:SEQ_Q100
+						AND A.SEQ_T300=:SEQ_T300
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+		<query id="getOtherList" mappingStyle="none">
+			<statement>
+				<![CDATA[
+						SELECT A.SEQ_Q100, A.SEQ_T300, A.IN_LINE, B.REPORT_YN FROM (SELECT * FROM TDPP300 
+						WHERE DATA_YN ='Y' 
+						AND FORM_TYPE IN ('M','F')
+						AND POC_NO01=:POC_NO01
+						AND IN_LINE NOT LIKE '%' + :OTHER_LINE + '%') A LEFT OUTER JOIN (
+						
+						SELECT SEQ_Q100, SEQ_T300, 'Y' AS REPORT_YN FROM TDPP400) B
+						ON A.SEQ_Q100 = B.SEQ_Q100
+				]]>
+			</statement>
+			<result mapper="org.anyframe.query.impl.jdbc.mapper.CallbackResultSetMapper" />
+		</query>
+	</queries>
+</queryservice>
+

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+	<Properties>
+  		<Property name="logNm">logtest</Property>
+  		<Property name="layoutPattern">%d [%t] %-5level %c(%M:%L) - %m%n</Property>
+	</Properties>
+	
+	<appenders>
+
+		<Console name="console" target="SYSTEM_OUT">
+   			<PatternLayout pattern="${layoutPattern}" />
+  		</Console>
+  		
+		<RollingFile name="QICS_ALL" 
+				fileName="D:/QICS/Logs/QICS_ALL.log" filePattern="D:/QICS/Logs/%d{yyyy}/%d{yyyy-MM}/QICS_ALL_%d{yyyy-MM-dd}_%i.log">
+			<PatternLayout pattern="%d{HH:mm:ss.SSS} %-5p - %msg%n"/>
+			<Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="100MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="20"/>
+		</RollingFile>
+
+		<RollingFile name="QICS_ERROR" 
+				fileName="D:/QICS/Logs/QICS_ERROR.log" filePattern="D:/QICS/Logs/%d{yyyy}/%d{yyyy-MM}/QICS_ERROR_%d{yyyy-MM-dd}_%i.log">
+			<PatternLayout pattern="%d{HH:mm:ss.SSS} %-5p - %msg%n"/>
+			<Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="100MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="20"/>
+		</RollingFile>
+
+	</appenders>
+
+	<Loggers>
+	
+	<Root level="debug" additivity="true">
+			<AppenderRef ref="console" />
+<!-- 			<AppenderRef ref="QICS_ALL" /> -->
+		</Root>
+		
+	<Logger name="jdbc.sqlonly" level="debug" additivity="false">
+
+         <AppenderRef ref="console" /> 
+
+      <AppenderRef ref="file" />
+
+        </Logger>
+
+<Logger name="jdbc.resultset" level="debug" additivity="false">
+
+         <AppenderRef ref="console" /> 
+
+        </Logger>
+        
+        <!--  
+
+  필요시 사용
+
+        <Logger name="jdbc.sqltiming" level="info" additivity="false">
+
+            <AppenderRef ref="console" />
+
+        </Logger>
+
+        
+
+        <Logger name="jdbc.audit" level="info" additivity="false">
+
+         <AppenderRef ref="console" /> 
+
+        </Logger>
+
+        
+
+        <Logger name="jdbc.resultset" level="info" additivity="false">
+
+         <AppenderRef ref="console" /> 
+
+        </Logger>
+
+        
+
+        -->
+
+<!-- 		<Logger name="org.springframework" level="ERROR" additivity="true"> -->
+<!-- 			<AppenderRef ref="QICS_ERROR" /> -->
+<!-- 		</Logger> -->
+
+<!-- 		<Logger name="org.anyframe" level="ERROR" additivity="true"> -->
+<!-- 			<AppenderRef ref="QICS_ERROR" /> -->
+<!-- 		</Logger> -->
+
+<!-- 		<Logger name="org.apache.commons.beanutils.converters" level="ERROR" additivity="true"> -->
+<!-- 			<AppenderRef ref="QICS_ERROR" /> -->
+<!-- 		</Logger> -->
+
+		
+	</Loggers>
+</configuration>
